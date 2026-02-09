@@ -1,35 +1,115 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Sine Test</title>
+    <title>FM Test – 1C + 2M Series</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <button id="play">Play Sine (0.5s)</button>
+    <main class="app">
+      <h1>FM Test – 1 Carrier, 2 Series Modulators</h1>
 
-    <script>
-      const button = document.getElementById("play");
+      <section class="block">
+        <h2>Pitch</h2>
 
-      button.addEventListener("click", () => {
-        // Create an AudioContext each time (simple for now)
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        <div class="row">
+          <label>
+            MIDI Note
+            <input id="midiNote" type="number" value="60" />
+          </label>
+        </div>
 
-        // Create oscillator
-        const osc = ctx.createOscillator();
-        osc.type = "sine";
-        osc.frequency.value = 440; // A4
+        <div class="row">
+          <label class="full">
+            Spread Amount
+            <input id="spreadAmount" type="range" min="0" max="0.1" step="0.001" value="0" />
+          </label>
+        </div>
+      </section>
 
-        // Create gain envelope
-        const gain = ctx.createGain();
-        gain.gain.setValueAtTime(1, ctx.currentTime);
+      <section class="block">
+        <h2>Carrier Envelope (AHDHD)</h2>
+        <div class="row">
+          <label>
+            Attack
+            <input id="attack1" type="number" step="0.001" value="0.02" />
+          </label>
+          <label>
+            Hold 1
+            <input id="hold1" type="number" step="0.001" value="0.05" />
+          </label>
+          <label>
+            Decay 1
+            <input id="decay1" type="number" step="0.001" value="0.4" />
+          </label>
+          <label>
+            Target (%)
+            <input id="decay1Target" type="number" min="0" max="100" value="70" />
+          </label>
+          <label>
+            Hold 2
+            <input id="hold2" type="number" step="0.001" value="0.15" />
+          </label>
+          <label>
+            Decay 2
+            <input id="decay2" type="number" step="0.001" value="1.0" />
+          </label>
+        </div>
+      </section>
 
-        // Connect graph
-        osc.connect(gain).connect(ctx.destination);
+      <section class="block">
+        <h2>Modulator 1</h2>
+        <label class="full">
+          Gain
+          <input id="mod1Gain" type="range" min="0" max="800" value="0" />
+        </label>
+        <div class="oct-row" data-mod="1">
+          <span class="oct-label">Octave Ratio</span>
+          <button type="button" class="oct-btn" data-oct="-1">-1</button>
+          <button type="button" class="oct-btn active" data-oct="0">0</button>
+          <button type="button" class="oct-btn" data-oct="1">1</button>
+          <button type="button" class="oct-btn" data-oct="2">2</button>
+          <button type="button" class="oct-btn" data-oct="4">4</button>
+          <button type="button" class="oct-btn" data-oct="8">8</button>
+        </div>
+      </section>
 
-        // Start + stop
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.5);
-      });
-    </script>
+      <section class="block">
+        <h2>Modulator 2</h2>
+        <label class="full">
+          Gain
+          <input id="mod2Gain" type="range" min="0" max="800" value="0" />
+        </label>
+        <div class="oct-row" data-mod="2">
+          <span class="oct-label">Octave Ratio</span>
+          <button type="button" class="oct-btn" data-oct="-1">-1</button>
+          <button type="button" class="oct-btn active" data-oct="0">0</button>
+          <button type="button" class="oct-btn" data-oct="1">1</button>
+          <button type="button" class="oct-btn" data-oct="2">2</button>
+          <button type="button" class="oct-btn" data-oct="4">4</button>
+          <button type="button" class="oct-btn" data-oct="8">8</button>
+        </div>
+      </section>
+
+      <section class="block">
+        <h2>Render</h2>
+        <div class="row">
+          <label>
+            Sample Rate
+            <input id="sampleRate" type="number" value="192000" />
+          </label>
+          <label>
+            Duration (s)
+            <input id="renderDuration" type="number" step="0.1" value="8.0" />
+          </label>
+        </div>
+      </section>
+
+      <section class="block center">
+        <button id="play">Play</button>
+      </section>
+    </main>
+
+    <script src="main.js"></script>
   </body>
 </html>
