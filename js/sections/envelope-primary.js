@@ -20,6 +20,21 @@ window.initEnvelopePrimary = function () {
     return Math.round(v) + "%";
   });
 
+  UI.bindSlider("spreadAmount", "spreadAmountValue", v => {
+    P.spreadAmount = Number(v) / 100;
+    return Math.round(v) + "%";
+  });
+
+  UI.bindSlider("mod1Gain", "mod1GainValue", v => {
+    P.modulators[0].gain = Number(v) / 100;
+    return Math.round(v) + "%";
+  });
+
+  UI.bindSlider("mod2Gain", "mod2GainValue", v => {
+    P.modulators[0].gain = Number(v) / 100;
+    return Math.round(v) + "%";
+  });
+
   UI.bindSlider("envMult", "envMultValue", v => {
     P.envMult = Number(v);
     return v + "×";

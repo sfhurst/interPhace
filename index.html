@@ -49,7 +49,7 @@
               <span class="control-value" id="attack1Value">0.02</span>
             </div>
             <div class="control-body">
-              <input id="attack1" type="range" min="0" max="2" step="0.001" value="0.04" />
+              <input id="attack1" type="range" min="0" max="2" step="0.002" value="0.04" />
             </div>
           </div>
 
@@ -59,7 +59,7 @@
               <span class="control-value" id="hold1Value">0.05</span>
             </div>
             <div class="control-body">
-              <input id="hold1" type="range" min="0" max="2" step="0.001" value="0.00" />
+              <input id="hold1" type="range" min="0" max="6" step="0.002" value="0.00" />
             </div>
           </div>
 
@@ -69,7 +69,7 @@
               <span class="control-value" id="decay1Value">0.4</span>
             </div>
             <div class="control-body">
-              <input id="decay1" type="range" min="0" max="2" step="0.001" value="0.80" />
+              <input id="decay1" type="range" min="0" max="2" step="0.002" value="0.80" />
             </div>
           </div>
 
@@ -89,7 +89,7 @@
               <span class="control-value" id="hold2Value">0.15</span>
             </div>
             <div class="control-body">
-              <input id="hold2" type="range" min="0" max="2" step="0.001" value="1.5" />
+              <input id="hold2" type="range" min="0" max="6" step="0.002" value="1.5" />
             </div>
           </div>
 
@@ -99,7 +99,7 @@
               <span class="control-value" id="decay2Value">1.0</span>
             </div>
             <div class="control-body">
-              <input id="decay2" type="range" min="0" max="2" step="0.001" value="0.9" />
+              <input id="decay2" type="range" min="0" max="2" step="0.002" value="0.9" />
             </div>
           </div>
 
@@ -129,10 +129,10 @@
             <div class="control">
               <div class="control-top">
                 <label class="control-label">Spread Amount</label>
-                <span class="control-value" id="spreadAmountValue">0.00</span>
+                <span class="control-value" id="spreadAmountValue">0%</span>
               </div>
               <div class="control-body">
-                <input id="spreadAmount" type="range" min="0" max="0.1" step="0.001" value="0" />
+                <input id="spreadAmount" type="range" min="0" max="100" step="1" value="0" />
               </div>
             </div>
 
@@ -143,15 +143,17 @@
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
-                  <span class="control-value" id="mod1GainValue">0</span>
+                  <span class="control-value" id="mod1GainValue">0%</span>
                 </div>
                 <div class="control-body">
-                  <input id="mod1Gain" type="range" min="0" max="800" value="0" />
+                  <input id="mod1Gain" type="range" min="0" max="100" value="0" />
                 </div>
               </div>
 
+              <div class="control">
+                <span class="control-label">Octave</span>
+              </div>
               <div class="oct-row" data-mod="1">
-                <span class="oct-label">Octave</span>
                 <button class="oct-btn" data-oct="-1">-1</button>
                 <button class="oct-btn active" data-oct="0">0</button>
                 <button class="oct-btn" data-oct="1">1</button>
@@ -168,15 +170,17 @@
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
-                  <span class="control-value" id="mod2GainValue">0</span>
+                  <span class="control-value" id="mod2GainValue">0%</span>
                 </div>
                 <div class="control-body">
-                  <input id="mod2Gain" type="range" min="0" max="800" value="0" />
+                  <input id="mod2Gain" type="range" min="0" max="100" value="0" />
                 </div>
               </div>
 
+              <div class="control">
+                <span class="control-label">Octave</span>
+              </div>
               <div class="oct-row" data-mod="2">
-                <span class="oct-label">Octave</span>
                 <button class="oct-btn" data-oct="-1">-1</button>
                 <button class="oct-btn active" data-oct="0">0</button>
                 <button class="oct-btn" data-oct="1">1</button>
