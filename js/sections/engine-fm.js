@@ -107,43 +107,36 @@ window.initFMSynth = function () {
     mod2.stop(noteLength);
 
     // ============================================================
-    //  SPREAD
+    //  SPREAD (Operator‑style: stable, no delay, no phase offset)
     // ============================================================
 
     if (P.spreadAmount > 0) {
-      const phaseOffset = P.spreadAmount * (1 / baseFreq);
+      // UI 0–100% → DSP 0.00–0.10
+      const amt = P.spreadAmount; // already scaled in your UI binding
 
       const left = offline.createOscillator();
       left.type = "sine";
-      left.frequency.value = baseFreq;
+      left.frequency.value = baseFreq * (1 - amt * 0.001);
+
+      const right = offline.createOscillator();
+      right.type = "sine";
+      right.frequency.value = baseFreq * (1 + amt * 0.001);
 
       const leftPan = offline.createStereoPanner();
       leftPan.pan.value = -1;
 
-      const right = offline.createOscillator();
-      right.type = "sine";
-      right.frequency.value = baseFreq * (1 + P.spreadAmount * 0.001);
-
       const rightPan = offline.createStereoPanner();
       rightPan.pan.value = 1;
 
-      const microDelay = offline.createDelay();
-      microDelay.delayTime.value = P.spreadAmount * 0.002;
-
+      // FM applied identically to both oscillators
       mod1Gain.connect(left.frequency);
       mod1Gain.connect(right.frequency);
 
-      const gLeft = offline.createGain();
-      gLeft.gain.value = 1.0;
-
-      const gRight = offline.createGain();
-      gRight.gain.value = 0.95;
-
-      left.connect(gLeft).connect(leftPan).connect(env);
-      right.connect(gRight).connect(microDelay).connect(rightPan).connect(env);
+      left.connect(leftPan).connect(env);
+      right.connect(rightPan).connect(env);
 
       left.start(0);
-      right.start(phaseOffset);
+      right.start(0);
 
       left.stop(noteLength);
       right.stop(noteLength);

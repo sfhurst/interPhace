@@ -21,17 +21,18 @@ window.initEnvelopePrimary = function () {
   });
 
   UI.bindSlider("spreadAmount", "spreadAmountValue", v => {
-    P.spreadAmount = Number(v) / 100;
+    // UI 0–100% → DSP 0.00–0.10 (original range)
+    P.spreadAmount = Number(v);
     return Math.round(v) + "%";
   });
 
   UI.bindSlider("mod1Gain", "mod1GainValue", v => {
-    P.modulators[0].gain = Number(v) / 100;
+    P.modulators[0].gain = Math.pow(Number(v) / 100, 2) * 800;
     return Math.round(v) + "%";
   });
 
   UI.bindSlider("mod2Gain", "mod2GainValue", v => {
-    P.modulators[0].gain = Number(v) / 100;
+    P.modulators[1].gain = Math.pow(Number(v) / 100, 2) * 800;
     return Math.round(v) + "%";
   });
 

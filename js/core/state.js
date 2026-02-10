@@ -5,7 +5,7 @@
 window.P = {
   midiNote: 60,
 
-  spreadAmount: 0.0,
+  spreadAmount: 0,
   spreadGain: 0.35,
 
   attack1: 0.04,

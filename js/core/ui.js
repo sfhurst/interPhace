@@ -39,11 +39,6 @@ window.updateParamsFromHTML = function () {
   P.hold2 = Number(document.getElementById("hold2").value);
   P.decay2 = Number(document.getElementById("decay2").value);
 
-  P.modulators[0].gain = Number(document.getElementById("mod1Gain").value);
-  P.modulators[1].gain = Number(document.getElementById("mod2Gain").value);
-
-  P.spreadAmount = Number(document.getElementById("spreadAmount").value);
-
   P.sampleRate = Number(document.getElementById("sampleRate").value);
   P.renderDuration = Number(document.getElementById("renderDuration").value);
 };
