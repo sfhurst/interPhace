@@ -136,6 +136,13 @@ body {
   text-align: right;
 }
 
+.control-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
 /* PRESET BUTTONS ------------------------------------------ */
 
 .preset-row {
@@ -244,4 +251,35 @@ body {
 
 .play-btn:hover {
   background: #39c;
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .app {
+    max-width: 100%;
+    padding: 12px;
+  }
+
+  .panel-header {
+    font-size: 16px;
+    padding: 14px 16px;
+  }
+
+  .control-label,
+  .control-value {
+    font-size: 16px;
+  }
+
+  .control-body input[type="range"] {
+    height: 32px;
+  }
+
+  .preset-btn,
+  .engine-btn,
+  .oct-btn,
+  .page-btn {
+    padding: 10px 16px;
+    font-size: 14px;
+  }
 }

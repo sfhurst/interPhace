@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>interPhace – hurst.audio</title>
     <link rel="stylesheet" href="style.css" />
   </head>
@@ -20,10 +21,12 @@
         <button class="panel-header">Pitch</button>
         <div class="panel-body" id="pitchSection">
           <div class="control">
-            <label class="control-label">Root Note</label>
+            <div class="control-top">
+              <label class="control-label">Root Note</label>
+              <span class="control-value" id="rootNoteValue">C4 (60)</span>
+            </div>
             <div class="control-body">
               <input id="rootNote" type="range" min="21" max="108" value="60" />
-              <span class="control-value" id="rootNoteValue">C4 (60)</span>
             </div>
           </div>
         </div>
@@ -41,58 +44,72 @@
           </div>
 
           <div class="control">
-            <label class="control-label">Attack</label>
-            <div class="control-body">
-              <input id="attack1" type="range" min="0" max="2" step="0.001" value="0.04" />
+            <div class="control-top">
+              <label class="control-label">Attack</label>
               <span class="control-value" id="attack1Value">0.02</span>
             </div>
+            <div class="control-body">
+              <input id="attack1" type="range" min="0" max="2" step="0.001" value="0.04" />
+            </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Hold 1</label>
-            <div class="control-body">
-              <input id="hold1" type="range" min="0" max="2" step="0.001" value="0.00" />
+            <div class="control-top">
+              <label class="control-label">Hold 1</label>
               <span class="control-value" id="hold1Value">0.05</span>
             </div>
+            <div class="control-body">
+              <input id="hold1" type="range" min="0" max="2" step="0.001" value="0.00" />
+            </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Decay 1</label>
-            <div class="control-body">
-              <input id="decay1" type="range" min="0" max="2" step="0.001" value="0.80" />
+            <div class="control-top">
+              <label class="control-label">Decay 1</label>
               <span class="control-value" id="decay1Value">0.4</span>
             </div>
+            <div class="control-body">
+              <input id="decay1" type="range" min="0" max="2" step="0.001" value="0.80" />
+            </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Decay 1 Target (%)</label>
-            <div class="control-body">
-              <input id="decay1Target" type="range" min="0" max="100" value="10" />
+            <div class="control-top">
+              <label class="control-label">Decay 1 Target (%)</label>
               <span class="control-value" id="decay1TargetValue">70%</span>
             </div>
+            <div class="control-body">
+              <input id="decay1Target" type="range" min="0" max="100" value="10" />
+            </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Hold 2</label>
-            <div class="control-body">
-              <input id="hold2" type="range" min="0" max="2" step="0.001" value="1.5" />
+            <div class="control-top">
+              <label class="control-label">Hold 2</label>
               <span class="control-value" id="hold2Value">0.15</span>
             </div>
-          </div>
-
-          <div class="control">
-            <label class="control-label">Decay 2</label>
             <div class="control-body">
-              <input id="decay2" type="range" min="0" max="2" step="0.001" value="0.9" />
-              <span class="control-value" id="decay2Value">1.0</span>
+              <input id="hold2" type="range" min="0" max="2" step="0.001" value="1.5" />
             </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Time Multiplier</label>
+            <div class="control-top">
+              <label class="control-label">Decay 2</label>
+              <span class="control-value" id="decay2Value">1.0</span>
+            </div>
+            <div class="control-body">
+              <input id="decay2" type="range" min="0" max="2" step="0.001" value="0.9" />
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Time Multiplier</label>
+              <span class="control-value" id="envMultValue">100%</span>
+            </div>
             <div class="control-body">
               <input id="envMult" type="range" min="0.25" max="10" step="0.25" value="1.00" />
-              <span class="control-value" id="envMultValue">100%</span>
             </div>
           </div>
         </div>
@@ -110,10 +127,12 @@
 
           <div class="engine-panel active" id="engine-fm">
             <div class="control">
-              <label class="control-label">Spread Amount</label>
+              <div class="control-top">
+                <label class="control-label">Spread Amount</label>
+                <span class="control-value" id="spreadAmountValue">0.00</span>
+              </div>
               <div class="control-body">
                 <input id="spreadAmount" type="range" min="0" max="0.1" step="0.001" value="0" />
-                <span class="control-value" id="spreadAmountValue">0.00</span>
               </div>
             </div>
 
@@ -122,10 +141,12 @@
               <h3 class="mod-title">Modulator 1</h3>
 
               <div class="control">
-                <label class="control-label">Gain</label>
+                <div class="control-top">
+                  <label class="control-label">Gain</label>
+                  <span class="control-value" id="mod1GainValue">0</span>
+                </div>
                 <div class="control-body">
                   <input id="mod1Gain" type="range" min="0" max="800" value="0" />
-                  <span class="control-value" id="mod1GainValue">0</span>
                 </div>
               </div>
 
@@ -145,10 +166,12 @@
               <h3 class="mod-title">Modulator 2</h3>
 
               <div class="control">
-                <label class="control-label">Gain</label>
+                <div class="control-top">
+                  <label class="control-label">Gain</label>
+                  <span class="control-value" id="mod2GainValue">0</span>
+                </div>
                 <div class="control-body">
                   <input id="mod2Gain" type="range" min="0" max="800" value="0" />
-                  <span class="control-value" id="mod2GainValue">0</span>
                 </div>
               </div>
 
@@ -195,18 +218,22 @@
         <button class="panel-header">Render</button>
         <div class="panel-body" id="renderSection">
           <div class="control">
-            <label class="control-label">Sample Rate</label>
+            <div class="control-top">
+              <label class="control-label">Sample Rate</label>
+              <span class="control-value" id="sampleRateValue">192000</span>
+            </div>
             <div class="control-body">
               <input id="sampleRate" type="range" min="44100" max="192000" step="100" value="192000" />
-              <span class="control-value" id="sampleRateValue">192000</span>
             </div>
           </div>
 
           <div class="control">
-            <label class="control-label">Duration (s)</label>
+            <div class="control-top">
+              <label class="control-label">Duration (s)</label>
+              <span class="control-value" id="renderDurationValue">8.0</span>
+            </div>
             <div class="control-body">
               <input id="renderDuration" type="range" min="0.1" max="30" step="0.1" value="8.0" />
-              <span class="control-value" id="renderDurationValue">8.0</span>
             </div>
           </div>
 
