@@ -2,114 +2,233 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>FM Test – 1C + 2M Series</title>
+    <title>interPhace – hurst.audio</title>
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <main class="app">
-      <h1>FM Test – 1 Carrier, 2 Series Modulators</h1>
+      <!-- HEADER / BRANDING -->
+      <header class="instrument-header">
+        <div class="instrument-left">interPhace</div>
+        <button id="play" class="play-btn">Audition</button>
+        <div class="instrument-right">hurst.audio</div>
+      </header>
 
-      <section class="block">
-        <h2>Pitch</h2>
-
-        <div class="row">
-          <label>
-            MIDI Note
-            <input id="midiNote" type="number" value="60" />
-          </label>
-        </div>
-
-        <div class="row">
-          <label class="full">
-            Spread Amount
-            <input id="spreadAmount" type="range" min="0" max="0.1" step="0.001" value="0" />
-          </label>
-        </div>
-      </section>
-
-      <section class="block">
-        <h2>Carrier Envelope (AHDHD)</h2>
-        <div class="row">
-          <label>
-            Attack
-            <input id="attack1" type="number" step="0.001" value="0.02" />
-          </label>
-          <label>
-            Hold 1
-            <input id="hold1" type="number" step="0.001" value="0.05" />
-          </label>
-          <label>
-            Decay 1
-            <input id="decay1" type="number" step="0.001" value="0.4" />
-          </label>
-          <label>
-            Target (%)
-            <input id="decay1Target" type="number" min="0" max="100" value="70" />
-          </label>
-          <label>
-            Hold 2
-            <input id="hold2" type="number" step="0.001" value="0.15" />
-          </label>
-          <label>
-            Decay 2
-            <input id="decay2" type="number" step="0.001" value="1.0" />
-          </label>
+      <!-- PITCH -->
+      <section class="panel" data-section="pitch">
+        <button class="panel-header">Pitch</button>
+        <div class="panel-body" id="pitchSection">
+          <div class="control">
+            <label class="control-label">Root Note</label>
+            <div class="control-body">
+              <input id="rootNote" type="range" min="21" max="108" value="60" />
+              <span class="control-value" id="rootNoteValue">C4 (60)</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="block">
-        <h2>Modulator 1</h2>
-        <label class="full">
-          Gain
-          <input id="mod1Gain" type="range" min="0" max="800" value="0" />
-        </label>
-        <div class="oct-row" data-mod="1">
-          <span class="oct-label">Octave Ratio</span>
-          <button type="button" class="oct-btn" data-oct="-1">-1</button>
-          <button type="button" class="oct-btn active" data-oct="0">0</button>
-          <button type="button" class="oct-btn" data-oct="1">1</button>
-          <button type="button" class="oct-btn" data-oct="2">2</button>
-          <button type="button" class="oct-btn" data-oct="4">4</button>
-          <button type="button" class="oct-btn" data-oct="8">8</button>
+      <!-- ENVELOPE (PRIMARY) -->
+      <section class="panel" data-section="envPrimary">
+        <button class="panel-header">Envelope (Primary)</button>
+        <div class="panel-body" id="envPrimarySection">
+          <div class="preset-row">
+            <button class="preset-btn" data-env="blip">Blip</button>
+            <button class="preset-btn active" data-env="piano">Piano</button>
+            <button class="preset-btn" data-env="pad">Pad</button>
+            <button class="preset-btn" data-env="drone">Drone</button>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Attack</label>
+            <div class="control-body">
+              <input id="attack1" type="range" min="0" max="2" step="0.001" value="0.04" />
+              <span class="control-value" id="attack1Value">0.02</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Hold 1</label>
+            <div class="control-body">
+              <input id="hold1" type="range" min="0" max="2" step="0.001" value="0.00" />
+              <span class="control-value" id="hold1Value">0.05</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Decay 1</label>
+            <div class="control-body">
+              <input id="decay1" type="range" min="0" max="2" step="0.001" value="0.80" />
+              <span class="control-value" id="decay1Value">0.4</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Decay 1 Target (%)</label>
+            <div class="control-body">
+              <input id="decay1Target" type="range" min="0" max="100" value="10" />
+              <span class="control-value" id="decay1TargetValue">70%</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Hold 2</label>
+            <div class="control-body">
+              <input id="hold2" type="range" min="0" max="2" step="0.001" value="1.5" />
+              <span class="control-value" id="hold2Value">0.15</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Decay 2</label>
+            <div class="control-body">
+              <input id="decay2" type="range" min="0" max="2" step="0.001" value="0.9" />
+              <span class="control-value" id="decay2Value">1.0</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Time Multiplier</label>
+            <div class="control-body">
+              <input id="envMult" type="range" min="0.25" max="10" step="0.25" value="1.00" />
+              <span class="control-value" id="envMultValue">100%</span>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section class="block">
-        <h2>Modulator 2</h2>
-        <label class="full">
-          Gain
-          <input id="mod2Gain" type="range" min="0" max="800" value="0" />
-        </label>
-        <div class="oct-row" data-mod="2">
-          <span class="oct-label">Octave Ratio</span>
-          <button type="button" class="oct-btn" data-oct="-1">-1</button>
-          <button type="button" class="oct-btn active" data-oct="0">0</button>
-          <button type="button" class="oct-btn" data-oct="1">1</button>
-          <button type="button" class="oct-btn" data-oct="2">2</button>
-          <button type="button" class="oct-btn" data-oct="4">4</button>
-          <button type="button" class="oct-btn" data-oct="8">8</button>
+      <!-- ENGINE -->
+      <section class="panel" data-section="engine">
+        <button class="panel-header">Engine</button>
+        <div class="panel-body" id="engineSection">
+          <div class="engine-select">
+            <button class="engine-btn active" data-engine="fm">FM Synth</button>
+            <button class="engine-btn" data-engine="sub">Subtractive</button>
+            <button class="engine-btn" data-engine="sampler">Sampler</button>
+          </div>
+
+          <div class="engine-panel active" id="engine-fm">
+            <div class="control">
+              <label class="control-label">Spread Amount</label>
+              <div class="control-body">
+                <input id="spreadAmount" type="range" min="0" max="0.1" step="0.001" value="0" />
+                <span class="control-value" id="spreadAmountValue">0.00</span>
+              </div>
+            </div>
+
+            <!-- MODULATOR 1 -->
+            <div class="mod-block">
+              <h3 class="mod-title">Modulator 1</h3>
+
+              <div class="control">
+                <label class="control-label">Gain</label>
+                <div class="control-body">
+                  <input id="mod1Gain" type="range" min="0" max="800" value="0" />
+                  <span class="control-value" id="mod1GainValue">0</span>
+                </div>
+              </div>
+
+              <div class="oct-row" data-mod="1">
+                <span class="oct-label">Octave</span>
+                <button class="oct-btn" data-oct="-1">-1</button>
+                <button class="oct-btn active" data-oct="0">0</button>
+                <button class="oct-btn" data-oct="1">1</button>
+                <button class="oct-btn" data-oct="2">2</button>
+                <button class="oct-btn" data-oct="4">4</button>
+                <button class="oct-btn" data-oct="8">8</button>
+              </div>
+            </div>
+
+            <!-- MODULATOR 2 -->
+            <div class="mod-block">
+              <h3 class="mod-title">Modulator 2</h3>
+
+              <div class="control">
+                <label class="control-label">Gain</label>
+                <div class="control-body">
+                  <input id="mod2Gain" type="range" min="0" max="800" value="0" />
+                  <span class="control-value" id="mod2GainValue">0</span>
+                </div>
+              </div>
+
+              <div class="oct-row" data-mod="2">
+                <span class="oct-label">Octave</span>
+                <button class="oct-btn" data-oct="-1">-1</button>
+                <button class="oct-btn active" data-oct="0">0</button>
+                <button class="oct-btn" data-oct="1">1</button>
+                <button class="oct-btn" data-oct="2">2</button>
+                <button class="oct-btn" data-oct="4">4</button>
+                <button class="oct-btn" data-oct="8">8</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="engine-panel" id="engine-sub">
+            <!-- Subtractive engine UI -->
+          </div>
+
+          <div class="engine-panel" id="engine-sampler">
+            <!-- Sampler engine UI -->
+          </div>
         </div>
       </section>
 
-      <section class="block">
-        <h2>Render</h2>
-        <div class="row">
-          <label>
-            Sample Rate
-            <input id="sampleRate" type="number" value="192000" />
-          </label>
-          <label>
-            Duration (s)
-            <input id="renderDuration" type="number" step="0.1" value="8.0" />
-          </label>
+      <!-- FILTER -->
+      <section class="panel" data-section="filter">
+        <button class="panel-header">Filter</button>
+        <div class="panel-body" id="filterSection">
+          <!-- Filter controls go here -->
         </div>
       </section>
 
-      <section class="block center">
-        <button id="play">Play</button>
+      <!-- EFFECTS -->
+      <section class="panel" data-section="effects">
+        <button class="panel-header">Effects</button>
+        <div class="panel-body" id="effectsSection">
+          <!-- Effects controls go here -->
+        </div>
+      </section>
+
+      <!-- RENDER -->
+      <section class="panel" data-section="render">
+        <button class="panel-header">Render</button>
+        <div class="panel-body" id="renderSection">
+          <div class="control">
+            <label class="control-label">Sample Rate</label>
+            <div class="control-body">
+              <input id="sampleRate" type="range" min="44100" max="192000" step="100" value="192000" />
+              <span class="control-value" id="sampleRateValue">192000</span>
+            </div>
+          </div>
+
+          <div class="control">
+            <label class="control-label">Duration (s)</label>
+            <div class="control-body">
+              <input id="renderDuration" type="range" min="0.1" max="30" step="0.1" value="8.0" />
+              <span class="control-value" id="renderDurationValue">8.0</span>
+            </div>
+          </div>
+
+          <button id="render" class="render-btn">Render</button>
+        </div>
       </section>
     </main>
 
-    <script src="main.js"></script>
+    <!-- JS -->
+    <script src="js/core/state.js" defer></script>
+    <script src="js/core/ui.js" defer></script>
+    <script src="js/core/accordion.js" defer></script>
+    <script src="js/core/utils.js" defer></script>
+
+    <script src="js/sections/pitch.js" defer></script>
+    <script src="js/sections/envelope-primary.js" defer></script>
+    <script src="js/sections/engine.js" defer></script>
+    <script src="js/sections/engine-fm.js" defer></script>
+    <script src="js/sections/filter.js" defer></script>
+    <script src="js/sections/effects.js" defer></script>
+    <script src="js/sections/render.js" defer></script>
+
+    <script src="main.js" defer></script>
   </body>
 </html>
