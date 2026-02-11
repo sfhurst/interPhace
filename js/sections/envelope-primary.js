@@ -97,9 +97,16 @@ window.initEnvelopePrimary = function () {
       const span = document.getElementById(key + "Value");
 
       if (input) {
-        const sliderVal = env[key] / P.envMult; // normalized
-        input.value = sliderVal;
-        P[key] = sliderVal;
+        if (key === "decay1Target") {
+          // percentage, not time
+          input.value = env[key] * 100;
+          P.decay1Target = env[key];
+        } else {
+          // time-based envelope values
+          const sliderVal = env[key] / P.envMult;
+          input.value = sliderVal;
+          P[key] = sliderVal;
+        }
       }
 
       if (span) {

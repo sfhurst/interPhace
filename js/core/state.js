@@ -18,8 +18,8 @@ window.P = {
   envMult: 1.0,
 
   modulators: [
-    { octave: 0, gain: 0, wave: "sine" },
-    { octave: 0, gain: 0, wave: "sine" },
+    { ratio: 0.5, gain: 0, wave: "sine" },
+    { ratio: 0.5, gain: 0, wave: "sine" },
   ],
 
   sampleRate: 192000,

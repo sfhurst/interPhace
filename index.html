@@ -36,13 +36,6 @@
       <section class="panel" data-section="envPrimary">
         <button class="panel-header">Envelope (Primary)</button>
         <div class="panel-body" id="envPrimarySection">
-          <div class="preset-row">
-            <button class="preset-btn" data-env="blip">Blip</button>
-            <button class="preset-btn active" data-env="piano">Piano</button>
-            <button class="preset-btn" data-env="pad">Pad</button>
-            <button class="preset-btn" data-env="drone">Drone</button>
-          </div>
-
           <div class="control">
             <div class="control-top">
               <label class="control-label">Attack</label>
@@ -112,6 +105,15 @@
               <input id="envMult" type="range" min="0.25" max="10" step="0.25" value="1.00" />
             </div>
           </div>
+
+          <div class="divider"></div>
+
+          <div class="preset-row">
+            <button class="preset-btn" data-env="blip">Blip</button>
+            <button class="preset-btn active" data-env="piano">Piano</button>
+            <button class="preset-btn" data-env="pad">Pad</button>
+            <button class="preset-btn" data-env="drone">Drone</button>
+          </div>
         </div>
       </section>
 
@@ -136,6 +138,8 @@
               </div>
             </div>
 
+            <div class="divider"></div>
+
             <!-- MODULATOR 1 -->
             <div class="mod-block">
               <h3 class="mod-title">Modulator 1</h3>
@@ -153,24 +157,26 @@
               <div class="control">
                 <span class="control-label">Ratio</span>
               </div>
-              <div class="oct-row" data-mod="1">
-                <button class="oct-btn" data-oct="-1">0.25x</button>
-                <button class="oct-btn active" data-oct="0">0.5x</button>
-                <button class="oct-btn" data-oct="1">0.75x</button>
-                <button class="oct-btn" data-oct="2">1</button>
-                <button class="oct-btn" data-oct="4">1.5</button>
-                <button class="oct-btn" data-oct="8">2</button>
+              <div class="ratio-row" data-mod="1">
+                <button class="ratio-btn" data-ratio="0.25">0.25x</button>
+                <button class="ratio-btn active" data-ratio="0.5">0.5x</button>
+                <button class="ratio-btn" data-ratio="0.75">0.75x</button>
+                <button class="ratio-btn" data-ratio="1">1</button>
+                <button class="ratio-btn" data-ratio="1.5">1.5</button>
+                <button class="ratio-btn" data-ratio="2">2</button>
               </div>
 
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
               <div class="wave-row" data-mod="1">
-                <button class="oct-btn active" data-wave="sine">Sine</button>
-                <button class="oct-btn" data-wave="square">Square</button>
-                <button class="oct-btn" data-wave="saw">Saw</button>
+                <button class="ratio-btn active" data-wave="sine">Sine</button>
+                <button class="ratio-btn" data-wave="square">Square</button>
+                <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
+
+            <div class="divider"></div>
 
             <!-- MODULATOR 2 -->
             <div class="mod-block">
@@ -187,24 +193,24 @@
               </div>
 
               <div class="control">
-                <span class="control-label">Octave</span>
+                <span class="control-label">Ratio</span>
               </div>
-              <div class="oct-row" data-mod="2">
-                <button class="oct-btn" data-oct="-1">-1</button>
-                <button class="oct-btn active" data-oct="0">0</button>
-                <button class="oct-btn" data-oct="1">1</button>
-                <button class="oct-btn" data-oct="2">2</button>
-                <button class="oct-btn" data-oct="4">4</button>
-                <button class="oct-btn" data-oct="8">8</button>
+              <div class="ratio-row" data-mod="2">
+                <button class="ratio-btn" data-ratio="0.25">0.25x</button>
+                <button class="ratio-btn active" data-ratio="0.5">0.5x</button>
+                <button class="ratio-btn" data-ratio="0.75">0.75x</button>
+                <button class="ratio-btn" data-ratio="1">1</button>
+                <button class="ratio-btn" data-ratio="1.5">1.5</button>
+                <button class="ratio-btn" data-ratio="2">2</button>
               </div>
 
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
               <div class="wave-row" data-mod="2">
-                <button class="oct-btn active" data-wave="sine">Sine</button>
-                <button class="oct-btn" data-wave="square">Square</button>
-                <button class="oct-btn" data-wave="saw">Saw</button>
+                <button class="ratio-btn active" data-wave="sine">Sine</button>
+                <button class="ratio-btn" data-wave="square">Square</button>
+                <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
           </div>
@@ -244,13 +250,13 @@
               <label class="control-label">Sample Rate</label>
             </div>
 
-            <div class="oct-row" id="sampleRateRow">
-              <button class="oct-btn" data-sr="44100">44.1k</button>
-              <button class="oct-btn" data-sr="48000">48k</button>
-              <button class="oct-btn" data-sr="88200">88.2k</button>
-              <button class="oct-btn" data-sr="96000">96k</button>
-              <button class="oct-btn" data-sr="176400">176.4k</button>
-              <button class="oct-btn active" data-sr="192000">192k</button>
+            <div class="ratio-row" id="sampleRateRow">
+              <button class="ratio-btn" data-sr="44100">44.1k</button>
+              <button class="ratio-btn" data-sr="48000">48k</button>
+              <button class="ratio-btn" data-sr="88200">88.2k</button>
+              <button class="ratio-btn" data-sr="96000">96k</button>
+              <button class="ratio-btn" data-sr="176400">176.4k</button>
+              <button class="ratio-btn active" data-sr="192000">192k</button>
             </div>
           </div>
 

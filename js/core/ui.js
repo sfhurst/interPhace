@@ -42,8 +42,8 @@ window.updateParamsFromHTML = function () {
   P.renderDuration = Number(document.getElementById("renderDuration").value);
 };
 
-window.initOctaveButtons = function () {
-  const groups = document.querySelectorAll(".oct-row");
+window.initRatioButtons = function () {
+  const groups = document.querySelectorAll(".ratio-row");
 
   groups.forEach(group => {
     const modIndex = Number(group.getAttribute("data-mod")) - 1;
@@ -53,12 +53,12 @@ window.initOctaveButtons = function () {
       const btn = e.target.closest("button");
       if (!btn) return;
 
-      if (!btn.hasAttribute("data-oct")) return; // ← the missing piece
+      if (!btn.hasAttribute("data-ratio")) return; // ← the missing piece
 
-      const oct = Number(btn.getAttribute("data-oct"));
-      P.modulators[modIndex].octave = oct;
+      const ratio = Number(btn.getAttribute("data-ratio"));
+      P.modulators[modIndex].ratio = ratio;
 
-      group.querySelectorAll(".oct-btn").forEach(b => b.classList.toggle("active", b === btn));
+      group.querySelectorAll(".ratio-btn").forEach(b => b.classList.toggle("active", b === btn));
     });
   });
 };
@@ -78,7 +78,7 @@ window.initWaveButtons = function () {
       const wave = btn.getAttribute("data-wave");
       P.modulators[modIndex].wave = wave;
 
-      group.querySelectorAll(".oct-btn").forEach(b => b.classList.toggle("active", b === btn));
+      group.querySelectorAll(".ratio-btn").forEach(b => b.classList.toggle("active", b === btn));
     });
   });
 };
@@ -117,7 +117,7 @@ window.initEngineSelector = function () {
 
 window.initSampleRateButtons = function () {
   const row = document.getElementById("sampleRateRow");
-  const buttons = row.querySelectorAll(".oct-btn");
+  const buttons = row.querySelectorAll(".ratio-btn");
 
   buttons.forEach(btn => {
     btn.addEventListener("click", () => {
