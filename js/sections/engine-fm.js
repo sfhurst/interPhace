@@ -7,6 +7,8 @@ let currentAudio = null;
 window.initFMSynth = function () {
   initOctaveButtons();
 
+  initSampleRateButtons();
+
   const button = document.getElementById("play");
 
   button.addEventListener("click", async () => {

@@ -39,7 +39,6 @@ window.updateParamsFromHTML = function () {
   P.hold2 = Number(document.getElementById("hold2").value);
   P.decay2 = Number(document.getElementById("decay2").value);
 
-  P.sampleRate = Number(document.getElementById("sampleRate").value);
   P.renderDuration = Number(document.getElementById("renderDuration").value);
 };
 
@@ -85,6 +84,26 @@ window.initEngineSelector = function () {
 
     document.querySelectorAll(".engine-panel").forEach(panel => {
       panel.classList.toggle("active", panel.id === "engine-" + P.engine);
+    });
+  });
+};
+
+// Sample Rate Buttons
+
+window.initSampleRateButtons = function () {
+  const row = document.getElementById("sampleRateRow");
+  const buttons = row.querySelectorAll(".oct-btn");
+
+  buttons.forEach(btn => {
+    btn.addEventListener("click", () => {
+      buttons.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      const sr = Number(btn.dataset.sr);
+      P.sampleRate = sr;
+
+      const span = document.getElementById("sampleRateValue");
+      if (span) span.textContent = sr;
     });
   });
 };

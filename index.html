@@ -224,10 +224,15 @@
           <div class="control">
             <div class="control-top">
               <label class="control-label">Sample Rate</label>
-              <span class="control-value" id="sampleRateValue">192000</span>
             </div>
-            <div class="control-body">
-              <input id="sampleRate" type="range" min="44100" max="192000" step="100" value="192000" />
+
+            <div class="oct-row" id="sampleRateRow">
+              <button class="oct-btn" data-sr="44100">44.1k</button>
+              <button class="oct-btn" data-sr="48000">48k</button>
+              <button class="oct-btn" data-sr="88200">88.2k</button>
+              <button class="oct-btn" data-sr="96000">96k</button>
+              <button class="oct-btn" data-sr="176400">176.4k</button>
+              <button class="oct-btn active" data-sr="192000">192k</button>
             </div>
           </div>
 

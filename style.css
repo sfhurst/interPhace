@@ -189,6 +189,12 @@ body {
   color: #0af;
 }
 
+.engine-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .engine-panel {
   display: none;
 }
@@ -198,23 +204,6 @@ body {
 }
 
 /* RENDER BUTTON ------------------------------------------- */
-
-/* .render-btn {
-  width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  background: #0af;
-  color: #000;
-  border: none;
-  cursor: pointer;
-  text-transform: uppercase;
-  letter-spacing: 0.16em;
-  border-radius: 3px;
-}
-
-.render-btn:hover {
-  background: #39c;
-} */
 
 .render-btn {
   width: 100%;
@@ -247,6 +236,12 @@ body {
 .oct-btn.active {
   border-color: #0af;
   color: #0af;
+}
+
+.oct-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .play-btn:hover {
