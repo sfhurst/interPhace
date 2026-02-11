@@ -41,12 +41,17 @@ window.initEnvelopePrimary = function () {
     return v + "×";
   });
 
-  function bind(id) {
-    UI.bindSlider(id, id + "Value", v => {
-      P[id] = Number(v);
-      return formatSeconds(P[id] * P.envMult);
+  const envMultSlider = document.getElementById("envMult");
+
+  envMultSlider.addEventListener("input", () => {
+    P.envMult = Number(envMultSlider.value);
+
+    // force all envelope displays to refresh using the new multiplier
+    ["attack1", "hold1", "decay1", "hold2", "decay2"].forEach(id => {
+      const span = document.getElementById(id + "Value");
+      span.textContent = formatSeconds(P[id] * P.envMult);
     });
-  }
+  });
 
   function applyPreset(name) {
     const map = {
@@ -57,17 +62,66 @@ window.initEnvelopePrimary = function () {
     };
 
     const env = map[name];
-    Object.assign(P, env);
 
+    // slider max values
+    const sliderMax = {
+      attack1: 2,
+      hold1: 6,
+      decay1: 2,
+      hold2: 6,
+      decay2: 2,
+    };
+
+    // determine required multiplier
+    let requiredMult = 1;
+
+    for (const key in env) {
+      if (sliderMax[key] !== undefined) {
+        const target = env[key];
+        const max = sliderMax[key];
+        const needed = target / max;
+        if (needed > requiredMult) requiredMult = needed;
+      }
+    }
+
+    // apply multiplier
+    P.envMult = requiredMult;
+    const envMultSlider = document.getElementById("envMult");
+    const envMultValue = document.getElementById("envMultValue");
+    envMultSlider.value = requiredMult;
+    envMultValue.textContent = requiredMult + "×";
+
+    // apply preset values to sliders and UI
     for (const key in env) {
       const input = document.getElementById(key);
       const span = document.getElementById(key + "Value");
 
-      if (input) input.value = env[key];
+      if (input) {
+        const sliderVal = env[key] / P.envMult; // normalized
+        input.value = sliderVal;
+        P[key] = sliderVal;
+      }
+
       if (span) {
-        if (key === "decay1Target") span.textContent = Math.round(env[key] * 100) + "%";
-        else span.textContent = formatSeconds(env[key] * P.envMult);
+        if (key === "decay1Target") {
+          span.textContent = Math.round(env[key] * 100) + "%";
+        } else {
+          span.textContent = formatSeconds(env[key]); // real seconds
+        }
       }
     }
+  }
+
+  // Load piano preset on startup
+  applyPreset("piano");
+
+  // Mark the piano button active
+  document.querySelector('.preset-btn[data-env="piano"]')?.classList.add("active");
+
+  function bind(id) {
+    UI.bindSlider(id, id + "Value", v => {
+      P[id] = Number(v);
+      return formatSeconds(P[id] * P.envMult);
+    });
   }
 };

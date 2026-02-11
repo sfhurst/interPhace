@@ -8,22 +8,22 @@ window.P = {
   spreadAmount: 0,
   spreadGain: 0.35,
 
-  attack1: 0.04,
-  hold1: 0.0,
-  decay1: 0.8,
-  decay1Target: 0.1,
-  hold2: 1.5,
-  decay2: 0.9,
+  // envelope values will be set by applyPreset("piano")
+  attack1: 0,
+  hold1: 0,
+  decay1: 0,
+  decay1Target: 0,
+  hold2: 0,
+  decay2: 0,
+  envMult: 1.0,
 
   modulators: [
-    { octave: 0, gain: 0 },
-    { octave: 0, gain: 0 },
+    { octave: 0, gain: 0, wave: "sine" },
+    { octave: 0, gain: 0, wave: "sine" },
   ],
 
   sampleRate: 192000,
   renderDuration: 8.0,
 
   engine: "fm",
-
-  envMult: 1.0,
 };

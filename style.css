@@ -244,6 +244,11 @@ body {
   gap: 8px;
 }
 
+.oct-row,
+.wave-row {
+  margin-bottom: 16px;
+}
+
 .play-btn:hover {
   background: #39c;
 }

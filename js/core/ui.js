@@ -44,16 +44,41 @@ window.updateParamsFromHTML = function () {
 
 window.initOctaveButtons = function () {
   const groups = document.querySelectorAll(".oct-row");
+
   groups.forEach(group => {
     const modIndex = Number(group.getAttribute("data-mod")) - 1;
-    if (modIndex < 0) return; // skip unison row
+    if (modIndex < 0) return;
 
     group.addEventListener("click", e => {
-      if (!(e.target instanceof HTMLButtonElement)) return;
-      const oct = Number(e.target.getAttribute("data-oct"));
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (!btn.hasAttribute("data-oct")) return; // ← the missing piece
+
+      const oct = Number(btn.getAttribute("data-oct"));
       P.modulators[modIndex].octave = oct;
 
-      group.querySelectorAll(".oct-btn").forEach(btn => btn.classList.toggle("active", btn === e.target));
+      group.querySelectorAll(".oct-btn").forEach(b => b.classList.toggle("active", b === btn));
+    });
+  });
+};
+
+window.initWaveButtons = function () {
+  const groups = document.querySelectorAll(".wave-row");
+
+  groups.forEach(group => {
+    const modIndex = Number(group.getAttribute("data-mod")) - 1;
+
+    group.addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+
+      if (!btn.hasAttribute("data-wave")) return; // ← same idea
+
+      const wave = btn.getAttribute("data-wave");
+      P.modulators[modIndex].wave = wave;
+
+      group.querySelectorAll(".oct-btn").forEach(b => b.classList.toggle("active", b === btn));
     });
   });
 };
@@ -107,3 +132,33 @@ window.initSampleRateButtons = function () {
     });
   });
 };
+
+// time multipler slider calc
+
+// ENV MULT SLIDER
+window.initEnvMult = function () {
+  const envMultSlider = document.getElementById("envMult");
+
+  envMultSlider.addEventListener("input", () => {
+    P.envMult = Number(envMultSlider.value);
+    updateEnvelopeDisplays();
+  });
+};
+
+function updateEnvelopeDisplays() {
+  const mult = P.envMult;
+
+  const pairs = [
+    ["attack1", "attack1Value"],
+    ["hold1", "hold1Value"],
+    ["decay1", "decay1Value"],
+    ["hold2", "hold2Value"],
+    ["decay2", "decay2Value"],
+  ];
+
+  pairs.forEach(([id, spanId]) => {
+    const raw = P[id];
+    const seconds = raw * mult;
+    document.getElementById(spanId).textContent = seconds.toFixed(3);
+  });
+}

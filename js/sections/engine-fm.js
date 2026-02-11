@@ -6,7 +6,7 @@ let currentAudio = null;
 
 window.initFMSynth = function () {
   initOctaveButtons();
-
+  initWaveButtons();
   initSampleRateButtons();
 
   const button = document.getElementById("play");
@@ -85,23 +85,45 @@ window.initFMSynth = function () {
     //  FM MODULATORS
     // ============================================================
 
+    // Debug: confirm the UI actually wrote the values you think it did
+    console.log("mod1 wave:", P.modulators[0].wave);
+    console.log("mod1 freq:", baseFreq * Math.pow(2, P.modulators[0].octave));
+    console.log("mod1 gain:", P.modulators[0].gain);
+    console.log("mod2 wave:", P.modulators[1].wave);
+    console.log("mod2 freq:", baseFreq * Math.pow(2, P.modulators[1].octave));
+    console.log("mod2 gain:", P.modulators[1].gain);
+
+    function normalizeWave(w) {
+      if (w === "saw") return "sawtooth";
+      return w;
+    }
+
+    // --- Mod 1 ---
     const mod1 = offline.createOscillator();
-    mod1.type = "sine";
+    mod1.type = normalizeWave(P.modulators[0].wave);
+
+    // mod1.type = P.modulators[0].wave; // <-- waveform from UI
     mod1.frequency.value = baseFreq * Math.pow(2, P.modulators[0].octave);
 
     const mod1Gain = offline.createGain();
     mod1Gain.gain.value = P.modulators[0].gain;
     mod1.connect(mod1Gain);
 
+    // --- Mod 2 ---
     const mod2 = offline.createOscillator();
-    mod2.type = "sine";
+    mod2.type = normalizeWave(P.modulators[1].wave);
+
+    // mod2.type = P.modulators[1].wave; // <-- waveform from UI
     mod2.frequency.value = baseFreq * Math.pow(2, P.modulators[1].octave);
 
     const mod2Gain = offline.createGain();
     mod2Gain.gain.value = P.modulators[1].gain;
     mod2.connect(mod2Gain);
+
+    // Mod2 → Mod1 frequency
     mod2Gain.connect(mod1.frequency);
 
+    // Start/stop
     mod1.start(0);
     mod1.stop(noteLength);
 
