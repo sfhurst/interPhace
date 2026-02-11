@@ -58,3 +58,33 @@ window.initOctaveButtons = function () {
     });
   });
 };
+
+// ACCORDION
+
+window.initAccordion = function () {
+  const panels = document.querySelectorAll(".panel");
+
+  panels.forEach(panel => {
+    const header = panel.querySelector(".panel-header");
+
+    // Toggle open/closed individually
+    header.addEventListener("click", () => {
+      panel.classList.toggle("open");
+    });
+
+    // Start all panels open
+    panel.classList.add("open");
+  });
+};
+
+// SYNTH SELECTOR
+
+window.initEngineSelector = function () {
+  UI.bindButtonGroup(".engine-btn", btn => {
+    P.engine = btn.dataset.engine;
+
+    document.querySelectorAll(".engine-panel").forEach(panel => {
+      panel.classList.toggle("active", panel.id === "engine-" + P.engine);
+    });
+  });
+};
