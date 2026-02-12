@@ -20,9 +20,9 @@ window.initEnvelopePrimary = function () {
     return Math.round(v) + "%";
   });
 
-  UI.bindSlider("spreadAmount", "spreadAmountValue", v => {
+  UI.bindSlider("detuneAmount", "detuneAmountValue", v => {
     // UI 0–100% → DSP 0.00–0.10 (original range)
-    P.spreadAmount = Number(v);
+    P.detuneAmount = Number(v);
     return Math.round(v) + "%";
   });
 

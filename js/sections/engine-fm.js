@@ -127,20 +127,31 @@ window.initFMSynth = function () {
     mod2.stop(noteLength);
 
     // ============================================================
-    //  SPREAD (Operator‑style: stable, no delay, no phase offset)
+    //  DETUNE (Detune with 0.050s stereo bloom attack)
     // ============================================================
 
-    if (P.spreadAmount > 0) {
-      // UI 0–100% → DSP 0.00–0.10
-      const amt = P.spreadAmount; // already scaled in your UI binding
+    if (P.detuneAmount > 0) {
+      const amt = P.detuneAmount; // 0–100
 
       const left = offline.createOscillator();
       left.type = "sine";
-      left.frequency.value = baseFreq * (1 - amt * 0.001);
+      left.frequency.value = baseFreq * (1 - amt * 0.0003);
 
       const right = offline.createOscillator();
       right.type = "sine";
-      right.frequency.value = baseFreq * (1 + amt * 0.001);
+      right.frequency.value = baseFreq * (1 + amt * 0.0003);
+
+      // --- NEW: bloom gain nodes ---
+      const leftGain = offline.createGain();
+      const rightGain = offline.createGain();
+
+      // Start silent
+      leftGain.gain.setValueAtTime(0, 0);
+      rightGain.gain.setValueAtTime(0, 0);
+
+      // Fade in over 0.050 seconds
+      leftGain.gain.linearRampToValueAtTime(1, 0.05);
+      rightGain.gain.linearRampToValueAtTime(1, 0.05);
 
       const leftPan = offline.createStereoPanner();
       leftPan.pan.value = -1;
@@ -152,8 +163,9 @@ window.initFMSynth = function () {
       mod1Gain.connect(left.frequency);
       mod1Gain.connect(right.frequency);
 
-      left.connect(leftPan).connect(env);
-      right.connect(rightPan).connect(env);
+      // Routing with bloom
+      left.connect(leftGain).connect(leftPan).connect(env);
+      right.connect(rightGain).connect(rightPan).connect(env);
 
       left.start(0);
       right.start(0);
