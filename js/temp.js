@@ -104,6 +104,13 @@ async function handlePlayClick() {
   const mod1Gain = offline.createGain();
 
   ////
+  //   // Local FM depth envelope (FM-only, not global amp env)
+  // const t0 = ctx.currentTime;
+  // mod1Gain.gain.setValueAtTime(0, t0);
+  // mod1Gain.gain.linearRampToValueAtTime(600, t0 + 0.15);
+  // mod1Gain.gain.linearRampToValueAtTime(50, t0 + 0.4);
+  // mod1Gain.gain.linearRampToValueAtTime(300, t0 + 0.7);
+  // mod1Gain.gain.linearRampToValueAtTime(0, t0 + noteLength);
   ////
 
   mod1Gain.gain.value = P.modulators[0].gain;

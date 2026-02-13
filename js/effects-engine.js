@@ -1,36 +1,71 @@
 // ============================================================
-//  DETUNE EFFECT (POST-ENGINE STEREO WIDTH)
-// ============================================================
-// Takes the processed mono sound from an engine (carrier audio)
-// and turns it into a stereo "detuned" image by duplicating and
-// panning the signal. This is an effect, not part of FM.
+//  EFFECTS ENGINE
 // ============================================================
 
-window.applyDetuneEffect = function (ctx, sourceNode, env, noteLength, detuneAmount) {
-  // If detune is off, do nothing — engine's mono path is used as-is
-  if (detuneAmount <= 0) return;
+window.EffectsEngine = {};
 
-  const amt = detuneAmount;
+// ------------------------------------------------------------
+//  REGISTER DEFAULTS
+// ------------------------------------------------------------
 
-  // Left/right gain taps from the same processed source
-  const leftGain = ctx.createGain();
-  const rightGain = ctx.createGain();
+EffectsEngine.register = function (patch) {
+  patch.fx.detune = { amount: 0 };
+};
 
-  // Slight level differences based on detuneAmount (subtle widening)
-  const spread = amt * 0.002; // tiny variation
-  leftGain.gain.value = 1 - spread;
-  rightGain.gain.value = 1 + spread;
+// ------------------------------------------------------------
+//  APPLY ALL EFFECTS IN SERIES
+// ------------------------------------------------------------
 
-  const leftPan = ctx.createStereoPanner();
-  leftPan.pan.value = -1;
+EffectsEngine.applyAll = function (ctx, inputNode, fxParams, noteLength) {
+  let node = inputNode;
 
-  const rightPan = ctx.createStereoPanner();
-  rightPan.pan.value = 1;
+  if (fxParams.detune && fxParams.detune.amount > 0) {
+    node = applyDetuneEffect(ctx, node, noteLength, fxParams.detune.amount);
+  }
 
-  // Tap the processed sound before it hits env (or from env if you prefer)
-  sourceNode.connect(leftGain).connect(leftPan).connect(env);
-  sourceNode.connect(rightGain).connect(rightPan).connect(env);
+  return { node };
+};
 
-  // No extra start/stop needed — we’re just routing audio
-  // Lifetime is tied to the sourceNode and env/noteLength
+// ------------------------------------------------------------
+//  DETUNE EFFECT
+// ------------------------------------------------------------
+
+window.applyDetuneEffect = function (ctx, sourceNode, noteLength, amt) {
+  if (amt <= 0) return sourceNode;
+
+  const base = amt * 0.00005;
+  const drift = amt * 0.0001;
+  const rate = 0.15 + amt * 0.006;
+
+  const left = ctx.createDelay();
+  const right = ctx.createDelay();
+
+  left.delayTime.value = base;
+  right.delayTime.value = base * 1.7;
+
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = rate;
+
+  const lfoL = ctx.createGain();
+  const lfoR = ctx.createGain();
+
+  lfoL.gain.value = drift * 0.6;
+  lfoR.gain.value = drift * 0.8;
+
+  lfo.connect(lfoL).connect(left.delayTime);
+  lfo.connect(lfoR).connect(right.delayTime);
+  lfo.start();
+
+  const split = ctx.createChannelSplitter(2);
+  const merge = ctx.createChannelMerger(2);
+
+  sourceNode.connect(split);
+
+  split.connect(left, 0);
+  left.connect(merge, 0, 0);
+
+  split.connect(right, 0);
+  right.connect(merge, 0, 1);
+
+  return merge;
 };
