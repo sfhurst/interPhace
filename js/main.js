@@ -199,6 +199,17 @@ window.initEnvelopeUI = function () {
 // ============================================================
 
 document.addEventListener("DOMContentLoaded", () => {
+  // ⭐ Warm‑up: resume AudioContext on first user click anywhere
+  window.addEventListener(
+    "click",
+    () => {
+      if (window.ctx && window.ctx.state === "suspended") {
+        window.ctx.resume();
+      }
+    },
+    { once: true },
+  );
+
   // 1) Engines register defaults
   FMEngine.register(patch);
   AmpEnvelopeEngine.register(patch);
