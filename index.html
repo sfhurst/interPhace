@@ -6,7 +6,7 @@
     <title>interPhace – hurst.audio</title>
     <link rel="stylesheet" href="style.css" />
   </head>
-
+ 
   <body>
     <main class="app">
       <!-- HEADER / BRANDING -->
@@ -15,7 +15,7 @@
         <button id="play" class="play-btn">Audition</button>
         <div class="instrument-right">hurst.audio</div>
       </header>
-
+ 
       <!-- PITCH -->
       <section class="panel" data-section="pitch">
         <button class="panel-header">Pitch</button>
@@ -31,7 +31,7 @@
           </div>
         </div>
       </section>
-
+ 
       <!-- ENVELOPE (PRIMARY) -->
       <section class="panel" data-section="envPrimary">
         <button class="panel-header">Envelope (Primary)</button>
@@ -45,7 +45,7 @@
               <input id="attack1" type="range" min="0" max="2" step="0.002" value="0.04" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Hold 1</label>
@@ -55,7 +55,7 @@
               <input id="hold1" type="range" min="0" max="6" step="0.002" value="0.00" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 1</label>
@@ -65,7 +65,7 @@
               <input id="decay1" type="range" min="0" max="2" step="0.002" value="0.80" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 1 Target (%)</label>
@@ -75,7 +75,7 @@
               <input id="decay1Target" type="range" min="0" max="100" value="10" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Hold 2</label>
@@ -85,7 +85,7 @@
               <input id="hold2" type="range" min="0" max="6" step="0.002" value="1.5" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 2</label>
@@ -95,7 +95,7 @@
               <input id="decay2" type="range" min="0" max="2" step="0.002" value="0.9" />
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Time Multiplier</label>
@@ -106,8 +106,18 @@
             </div>
           </div>
 
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Envelope Personality</label>
+              <span class="control-value" id="envelopePersonalityValue">Clean</span>
+            </div>
+            <div class="control-body">
+              <input id="envelopePersonality" type="range" min="0" max="19" step="1" value="0" />
+            </div>
+          </div>
+ 
           <div class="divider"></div>
-
+ 
           <div class="preset-row">
             <button class="preset-btn" data-env="blip">Blip</button>
             <button class="preset-btn active" data-env="piano">Piano</button>
@@ -116,7 +126,7 @@
           </div>
         </div>
       </section>
-
+ 
       <!-- ENGINE -->
       <section class="panel" data-section="engine">
         <button class="panel-header">Engine</button>
@@ -126,26 +136,14 @@
             <button class="engine-btn" data-engine="sub">Subtractive</button>
             <button class="engine-btn" data-engine="sampler">Sampler</button>
           </div>
-
+ 
           <div class="divider"></div>
-
+ 
           <div class="engine-panel active" id="engine-fm">
-            <div class="control">
-              <div class="control-top">
-                <label class="control-label">Detune</label>
-                <span class="control-value" id="detuneAmountValue">0%</span>
-              </div>
-              <div class="control-body">
-                <input id="detuneAmount" type="range" min="0" max="100" step="1" value="0" />
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
             <!-- MODULATOR 1 -->
             <div class="mod-block">
               <h3 class="mod-title">Modulator 1</h3>
-
+ 
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
@@ -162,7 +160,7 @@
                   <input id="fmDepthPreset" type="range" min="0" max="20" value="0" />
                 </div>
               </div>
-
+ 
               <div class="control">
                 <span class="control-label">Ratio</span>
               </div>
@@ -170,11 +168,15 @@
                 <button class="ratio-btn" data-ratio="0.5">0.5x</button>
                 <button class="ratio-btn" data-ratio="0.75">0.75x</button>
                 <button class="ratio-btn active" data-ratio="1">1</button>
+                <button class="ratio-btn" data-ratio="1.414">√2</button>
                 <button class="ratio-btn" data-ratio="1.5">1.5</button>
                 <button class="ratio-btn" data-ratio="2">2</button>
+                <button class="ratio-btn" data-ratio="2.5">2.5</button>
                 <button class="ratio-btn" data-ratio="3">3</button>
+                <button class="ratio-btn" data-ratio="3.5">3.5</button>
+                <button class="ratio-btn" data-ratio="4">4</button>
               </div>
-
+ 
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
@@ -184,13 +186,13 @@
                 <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
-
+ 
             <div class="divider"></div>
-
+ 
             <!-- MODULATOR 2 -->
             <div class="mod-block">
               <h3 class="mod-title">Modulator 2</h3>
-
+ 
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
@@ -200,7 +202,7 @@
                   <input id="mod2Gain" type="range" min="0" max="100" value="0" />
                 </div>
               </div>
-
+ 
               <div class="control">
                 <span class="control-label">Ratio</span>
               </div>
@@ -208,11 +210,15 @@
                 <button class="ratio-btn" data-ratio="0.5">0.5x</button>
                 <button class="ratio-btn" data-ratio="0.75">0.75x</button>
                 <button class="ratio-btn" data-ratio="1">1</button>
+                <button class="ratio-btn" data-ratio="1.414">√2</button>
                 <button class="ratio-btn" data-ratio="1.5">1.5</button>
                 <button class="ratio-btn active" data-ratio="2">2</button>
+                <button class="ratio-btn" data-ratio="2.5">2.5</button>
                 <button class="ratio-btn" data-ratio="3">3</button>
+                <button class="ratio-btn" data-ratio="3.5">3.5</button>
+                <button class="ratio-btn" data-ratio="4">4</button>
               </div>
-
+ 
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
@@ -222,18 +228,31 @@
                 <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
-          </div>
 
+            <div class="divider"></div>
+
+            <!-- STEREO WIDTH -->
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Stereo Width</label>
+                <span class="control-value" id="stereoWidthValue">0%</span>
+              </div>
+              <div class="control-body">
+                <input id="stereoWidth" type="range" min="0" max="100" value="0" />
+              </div>
+            </div>
+          </div>
+ 
           <div class="engine-panel" id="engine-sub">
             <!-- Subtractive engine UI -->
           </div>
-
+ 
           <div class="engine-panel" id="engine-sampler">
             <!-- Sampler engine UI -->
           </div>
         </div>
       </section>
-
+ 
       <!-- FILTER -->
       <section class="panel" data-section="filter">
         <button class="panel-header">Filter</button>
@@ -241,15 +260,47 @@
           <!-- Filter controls go here -->
         </div>
       </section>
-
+ 
       <!-- EFFECTS -->
       <section class="panel" data-section="effects">
         <button class="panel-header">Effects</button>
         <div class="panel-body" id="effectsSection">
-          <!-- Effects controls go here -->
+          <!--  -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Detune</label>
+              <span class="control-value" id="detuneAmountValue">0%</span>
+            </div>
+            <div class="control-body">
+              <input id="detuneAmount" type="range" min="0" max="100" step="1" value="0" />
+            </div>
+          </div>
+          <!--  -->
+          <!--  -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Chorus</label>
+              <span class="control-value" id="chorusAmountValue">0%</span>
+            </div>
+            <div class="control-body">
+              <input id="chorusAmount" type="range" min="0" max="100" step="1" value="0" />
+            </div>
+          </div>
+          <!--  -->
+          <!--  -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Reverb</label>
+              <span class="control-value" id="reverbAmountValue">0%</span>
+            </div>
+            <div class="control-body">
+              <input id="reverbAmount" type="range" min="0" max="100" step="1" value="0" />
+            </div>
+          </div>
+          <!--  -->
         </div>
       </section>
-
+ 
       <!-- RENDER -->
       <section class="panel" data-section="render">
         <button class="panel-header">Render</button>
@@ -258,7 +309,7 @@
             <div class="control-top">
               <label class="control-label">Sample Rate</label>
             </div>
-
+ 
             <div class="ratio-row" id="sampleRateRow">
               <button class="ratio-btn" data-sr="44100">44.1k</button>
               <button class="ratio-btn" data-sr="48000">48k</button>
@@ -268,7 +319,7 @@
               <button class="ratio-btn active" data-sr="192000">192k</button>
             </div>
           </div>
-
+ 
           <div class="control">
             <div class="control-top">
               <label class="control-label">Duration (s)</label>
@@ -278,15 +329,15 @@
               <input id="renderDuration" type="range" min="0.1" max="30" step="0.1" value="8.0" />
             </div>
           </div>
-
+ 
           <button id="render" class="render-btn">Render</button>
         </div>
       </section>
     </main>
-
+ 
     <!-- JS -->
     <script src="js/main.js" defer></script>
-
+ 
     <script src="js/carrier-engine.js" defer></script>
     <script src="js/fm-engine.js" defer></script>
     <script src="js/carrier-envelope-engine.js" defer></script>

@@ -130,7 +130,7 @@ window.initCarrierUI = function () {
 };
 
 // ============================================================
-//  ENVELOPE UI (AHDHD)
+//  ENVELOPE UI (AHDHD) WITH PERSONALITY
 // ============================================================
 
 window.initEnvelopeUI = function () {
@@ -146,6 +146,7 @@ window.initEnvelopeUI = function () {
     });
   });
 
+  // Bind envelope stage sliders
   bind("attack1");
   bind("hold1");
   bind("decay1");
@@ -157,18 +158,70 @@ window.initEnvelopeUI = function () {
     return Math.round(v) + "%";
   });
 
-  UI.bindSlider("envMult", "envMultValue", v => {
-    env.envMult = Number(v);
-    return v + "×";
-  });
+  // Multiplier slider
+  const envMultSlider = document.getElementById("envMult");
+  const envMultValue = document.getElementById("envMultValue");
+
+  if (envMultSlider && envMultValue) {
+    envMultSlider.addEventListener("input", () => {
+      env.envMult = Number(envMultSlider.value);
+      envMultValue.textContent = env.envMult + "×";
+      updateAllEnvelopeDisplays();
+    });
+    
+    env.envMult = Number(envMultSlider.value);
+    envMultValue.textContent = env.envMult + "×";
+  }
+
+  // NEW: Personality slider
+  const personalitySlider = document.getElementById("envelopePersonality");
+  const personalityValue = document.getElementById("envelopePersonalityValue");
+
+  if (personalitySlider && personalityValue) {
+    personalitySlider.addEventListener("input", () => {
+      env.personality = Number(personalitySlider.value);
+      
+      // Get personality names from the engine if available
+      const names = [
+        "Clean", "Analog Soft", "Analog Warm", "Analog Tape", "Analog Wow",
+        "Bell Shimmer", "Crystal Ring", "Glass Chime", "Wooden Clap", "Metal Hit",
+        "Pad Breath", "Pad Swell", "Choir Drift", "Ambient Float", "Dream Wash",
+        "Pluck Bounce", "Voice Growl", "Pitch Rise", "Chaos Drift", "Glitch Stutter"
+      ];
+      
+      personalityValue.textContent = names[env.personality] || "Custom";
+    });
+    
+    env.personality = Number(personalitySlider.value);
+    personalityValue.textContent = "Clean";
+  }
 
   applyPreset("piano");
   document.querySelector('.preset-btn[data-env="piano"]')?.classList.add("active");
 
   function bind(id) {
-    UI.bindSlider(id, id + "Value", v => {
-      env[id] = Number(v);
-      return formatSeconds(env[id] * env.envMult);
+    const slider = document.getElementById(id);
+    const valueSpan = document.getElementById(id + "Value");
+    
+    if (!slider || !valueSpan) return;
+    
+    slider.addEventListener("input", () => {
+      env[id] = Number(slider.value);
+      valueSpan.textContent = formatSeconds(env[id] * env.envMult);
+    });
+    
+    env[id] = Number(slider.value);
+    valueSpan.textContent = formatSeconds(env[id] * env.envMult);
+  }
+
+  function updateAllEnvelopeDisplays() {
+    const stages = ["attack1", "hold1", "decay1", "hold2", "decay2"];
+    
+    stages.forEach(stage => {
+      const valueSpan = document.getElementById(stage + "Value");
+      if (valueSpan && env[stage] !== undefined) {
+        valueSpan.textContent = formatSeconds(env[stage] * env.envMult);
+      }
     });
   }
 
@@ -189,7 +242,13 @@ window.initEnvelopeUI = function () {
       const input = document.getElementById(key);
       const span = document.getElementById(key + "Value");
       if (input) input.value = preset[key];
-      if (span) span.textContent = formatSeconds(preset[key]);
+      if (span) {
+        if (key === "decay1Target") {
+          span.textContent = Math.round(preset[key] * 100) + "%";
+        } else {
+          span.textContent = formatSeconds(preset[key] * env.envMult);
+        }
+      }
     }
   }
 };
@@ -199,29 +258,39 @@ window.initEnvelopeUI = function () {
 // ============================================================
 
 document.addEventListener("DOMContentLoaded", () => {
-  // ⭐ Warm‑up: resume AudioContext on first user click anywhere
-  window.addEventListener(
-    "click",
-    () => {
-      if (window.ctx && window.ctx.state === "suspended") {
-        window.ctx.resume();
-      }
-    },
-    { once: true },
-  );
+  try {
+    window.addEventListener(
+      "click",
+      () => {
+        try {
+          if (window.playbackContext && window.playbackContext.state === "suspended") {
+            window.playbackContext.resume();
+          }
+        } catch (err) {
+          console.error("Error resuming audio context:", err);
+        }
+      },
+      { once: true },
+    );
 
-  // 1) Engines register defaults
-  FMEngine.register(patch);
-  AmpEnvelopeEngine.register(patch);
-  EffectsEngine.register(patch);
+    if (typeof FMEngine !== 'undefined') FMEngine.register(patch);
+    if (typeof AmpEnvelopeEngine !== 'undefined') AmpEnvelopeEngine.register(patch);
+    if (typeof EffectsEngine !== 'undefined') EffectsEngine.register(patch);
 
-  // 2) UI
-  initAccordionUI();
-  initEngineSelectorUI();
-  initCarrierUI();
-  initEnvelopeUI();
+    initAccordionUI();
+    initEngineSelectorUI();
+    initCarrierUI();
+    initEnvelopeUI();
 
-  FMEngine.initUI(patch);
-  RenderEngine.initRenderUI(patch);
-  RenderEngine.initPlaybackUI(patch);
+    if (typeof FMEngine !== 'undefined') FMEngine.initUI(patch);
+    if (typeof RenderEngine !== 'undefined') {
+      RenderEngine.initRenderUI(patch);
+      RenderEngine.initPlaybackUI(patch);
+    }
+
+    console.log("✅ interPhace initialized successfully");
+  } catch (err) {
+    console.error("❌ Error initializing interPhace:", err);
+    alert("Failed to initialize audio. Please refresh the page.");
+  }
 });

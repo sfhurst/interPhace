@@ -1,32 +1,11 @@
-// 0.5 → 2.0   // 1:4 — bright, harmonic, clean; great for plucks & bells
-// 0.5 → 3.0   // 1:6 — shimmering, airy, digital‑piano sparkle
-
-// 0.75 → 1.5  // 1:2 — gentle, glassy, Operator‑ish EP tones
-// 0.75 → 2.0  // 3:8 — airy, hollow‑sweet, dreamy pads
-
-// 1.0 → 1.5   // 2:3 — classic FM bell sweetness, glassy & stable
-// 1.0 → 2.0   // 1:2 — bright, clean, DX7‑EP foundation
-// 1.0 → 3.0   // 1:3 — chimey, crystalline, mallet‑like
-
-// 1.5 → 2.0   // 3:4 — sweet, shimmering, emotional; perfect for pads & keys
-// 1.5 → 3.0   // 1:2 — bright but controlled; expressive EP & bell tones
-
-// 2.0 → 1.0   // 2:1 — bold, stable, classic FM; great for bass & leads
-// 2.0 → 1.5   // 4:3 — warm, harmonically rich, rounded FM
-
-// 3.0 → 1.5   // 2:1 — bright but musical; bell/mallet territory
-// 3.0 → 1.0   // 3:1 — metallic but still harmonic; percussive FM
-
 // ============================================================
-//  FM SYNTH ENGINE WITH PRESET-BASED FM DEPTH MODULATION
+//  FM SYNTH ENGINE - ENHANCED FOR PRETTY HIGHS
 // ============================================================
 
 window.FMEngine = {};
 
 // ------------------------------------------------------------
 //  FM DEPTH PRESET TABLE (index, attack, decay)
-//  index = FM modulation index (I)
-//  deviation = I * mod1Freq
 // ------------------------------------------------------------
 
 const FM_DEPTH_PRESETS = [
@@ -40,7 +19,7 @@ const FM_DEPTH_PRESETS = [
   { index: 0.8, attack: 0.02, decay: 0.08 },
   { index: 1.0, attack: 0.02, decay: 0.1 },
 
-  // 6–10: short attack, long decay (bells, chimes)
+  // 6–10: short attack, long decay (bells, chimes) ← YOUR SOUND IS HERE
   { index: 1.2, attack: 0.02, decay: 0.2 },
   { index: 1.5, attack: 0.03, decay: 0.3 },
   { index: 2.0, attack: 0.03, decay: 0.4 },
@@ -72,9 +51,8 @@ FMEngine.register = function (patch) {
       { ratio: 1.0, gain: 0, wave: "sine" },
       { ratio: 2.0, gain: 0, wave: "sine" },
     ],
-
-    // Single slider: selects preset 0–20
     fmDepthPreset: 0,
+    stereoWidth: 0, // NEW: 0-100 for stereo spread
   };
 };
 
@@ -103,7 +81,17 @@ FMEngine.initUI = function (patch) {
     return Math.round(v) + "%";
   });
 
-  // NEW: FM depth preset slider
+  UI.bindSlider("chorusAmount", "chorusAmountValue", v => {
+    patch.fx.chorus.amount = Number(v);
+    return Math.round(v) + "%";
+  });
+
+  UI.bindSlider("reverbAmount", "reverbAmountValue", v => {
+    patch.fx.reverb.amount = Number(v);
+    return Math.round(v) + "%";
+  });
+
+  // FM depth preset slider
   UI.bindSlider("fmDepthPreset", "fmDepthPresetValue", v => {
     fm.fmDepthPreset = Number(v);
 
@@ -118,6 +106,18 @@ FMEngine.initUI = function (patch) {
 
     return names[v] || "Preset";
   });
+
+  // NEW: Stereo width slider (if you add it to HTML)
+  const stereoWidthSlider = document.getElementById("stereoWidth");
+  const stereoWidthValue = document.getElementById("stereoWidthValue");
+  if (stereoWidthSlider && stereoWidthValue) {
+    stereoWidthSlider.addEventListener("input", () => {
+      fm.stereoWidth = Number(stereoWidthSlider.value);
+      stereoWidthValue.textContent = Math.round(fm.stereoWidth) + "%";
+    });
+    stereoWidthSlider.value = fm.stereoWidth;
+    stereoWidthValue.textContent = Math.round(fm.stereoWidth) + "%";
+  }
 };
 
 function initFMRatioUI(fm) {
@@ -156,7 +156,7 @@ function initFMWaveUI(fm) {
 }
 
 // ------------------------------------------------------------
-//  BUILD RAW FM AUDIO
+//  BUILD RAW FM AUDIO (ENHANCED)
 // ------------------------------------------------------------
 
 FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
@@ -164,8 +164,8 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
     return w === "saw" ? "sawtooth" : w;
   }
 
-  // prettier-ignore
   // FM index lookup table
+  // prettier-ignore
   const FM_INDEX_TABLE = [
     0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
     0.10,0.12,0.14,0.16,0.18,0.20,0.23,0.26,0.29,0.32,
@@ -188,18 +188,19 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
     return 69 + 12 * Math.log2(freq / 440);
   }
 
-  // Key scaling curve
+  // ENHANCED: Key scaling curve (SOFTER for high notes)
   function computeKeyScale(freq) {
     const midi = freqToMidi(freq);
 
-    if (midi <= 60) return 1.0;
-    if (midi >= 108) return 0.25;
+    if (midi <= 60) return 1.0; // Low notes: full modulation
+    if (midi >= 108) return 0.15; // Very high notes: gentle modulation
 
-    if (midi <= 72) return 1.0 - 0.15 * ((midi - 60) / 12);
-    if (midi <= 84) return 0.85 - 0.25 * ((midi - 72) / 12);
-    if (midi <= 96) return 0.6 - 0.2 * ((midi - 84) / 12);
+    // Smoother curve for prettier highs
+    if (midi <= 72) return 1.0 - 0.12 * ((midi - 60) / 12); // C4-C5: 1.0 → 0.88
+    if (midi <= 84) return 0.88 - 0.28 * ((midi - 72) / 12); // C5-C6: 0.88 → 0.6
+    if (midi <= 96) return 0.6 - 0.25 * ((midi - 84) / 12); // C6-C7: 0.6 → 0.35
 
-    return 0.4 - 0.15 * ((midi - 96) / 12);
+    return 0.35 - 0.2 * ((midi - 96) / 12); // C7-C8: 0.35 → 0.15
   }
 
   // Additive FM depth envelope using preset table
@@ -208,11 +209,10 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
 
     const start = t0 + 0.001;
 
-    const peakDelta = index * mod1Freq; // deviation = I * freq
+    const peakDelta = index * mod1Freq;
     const peakFM = baseFM + peakDelta;
 
     gainParam.cancelScheduledValues(start);
-
     gainParam.setValueAtTime(baseFM, start);
     gainParam.linearRampToValueAtTime(peakFM, start + attack);
     gainParam.linearRampToValueAtTime(baseFM, start + attack + decay);
@@ -221,64 +221,85 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
   const t0 = ctx.currentTime;
   const keyScale = computeKeyScale(baseFreq);
 
-  // -----------------------------
-  //  MODULATOR 1
-  // -----------------------------
-  const mod1Freq = baseFreq * fmParams.modulators[0].ratio;
+  // NEW: Apply stereo width (slight frequency offset between L/R)
+  const stereoDetune = (fmParams.stereoWidth || 0) / 100; // 0-1
+  const freqOffset = baseFreq * 0.002 * stereoDetune; // Up to 0.2% detune
 
-  const mod1 = ctx.createOscillator();
-  mod1.type = normalizeWave(fmParams.modulators[0].wave);
-  mod1.frequency.setValueAtTime(mod1Freq, t0);
+  // We'll return TWO carriers for stereo (L/R)
+  const carriers = [];
 
-  const mod1Deviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain) * keyScale;
+  // Create LEFT and RIGHT carriers
+  for (let channel = 0; channel < 2; channel++) {
+    const carrierFreq = channel === 0 
+      ? baseFreq - freqOffset  // Left: slightly flat
+      : baseFreq + freqOffset; // Right: slightly sharp
 
-  const mod1Gain = ctx.createGain();
-  mod1Gain.gain.setValueAtTime(mod1Deviation, t0);
+    // -----------------------------
+    //  MODULATOR 1
+    // -----------------------------
+    const mod1Freq = carrierFreq * fmParams.modulators[0].ratio;
 
-  // Apply preset-based FM depth envelope
-  const preset = FM_DEPTH_PRESETS[fmParams.fmDepthPreset];
+    const mod1 = ctx.createOscillator();
+    mod1.type = normalizeWave(fmParams.modulators[0].wave);
+    mod1.frequency.setValueAtTime(mod1Freq, t0);
 
-  applyFMDepthEnvelope(mod1Gain.gain, mod1Deviation, t0, preset.attack, preset.decay, preset.index, mod1Freq);
+    const mod1Deviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain) * keyScale;
 
-  mod1.connect(mod1Gain);
+    const mod1Gain = ctx.createGain();
+    mod1Gain.gain.setValueAtTime(mod1Deviation, t0);
 
-  // -----------------------------
-  //  MODULATOR 2 → MODULATOR 1
-  // -----------------------------
-  const mod2Freq = baseFreq * fmParams.modulators[1].ratio;
+    // Apply preset-based FM depth envelope
+    const preset = FM_DEPTH_PRESETS[fmParams.fmDepthPreset];
 
-  const mod2 = ctx.createOscillator();
-  mod2.type = normalizeWave(fmParams.modulators[1].wave);
-  mod2.frequency.setValueAtTime(mod2Freq, t0);
+    applyFMDepthEnvelope(mod1Gain.gain, mod1Deviation, t0, preset.attack, preset.decay, preset.index, mod1Freq);
 
-  const mod2Deviation = computeDeviation(mod2Freq, fmParams.modulators[1].gain) * keyScale;
+    mod1.connect(mod1Gain);
 
-  const mod2Gain = ctx.createGain();
-  mod2Gain.gain.setValueAtTime(mod2Deviation, t0);
+    // -----------------------------
+    //  MODULATOR 2 → MODULATOR 1
+    // -----------------------------
+    const mod2Freq = carrierFreq * fmParams.modulators[1].ratio;
 
-  mod2.connect(mod2Gain);
-  mod2Gain.connect(mod1.frequency);
+    const mod2 = ctx.createOscillator();
+    mod2.type = normalizeWave(fmParams.modulators[1].wave);
+    mod2.frequency.setValueAtTime(mod2Freq, t0);
 
-  // -----------------------------
-  //  CARRIER
-  // -----------------------------
-  const carrier = ctx.createOscillator();
-  carrier.type = "sine";
-  carrier.frequency.setValueAtTime(baseFreq, t0);
+    const mod2Deviation = computeDeviation(mod2Freq, fmParams.modulators[1].gain) * keyScale;
 
-  mod1Gain.connect(carrier.frequency);
+    const mod2Gain = ctx.createGain();
+    mod2Gain.gain.setValueAtTime(mod2Deviation, t0);
 
-  // -----------------------------
-  //  START / STOP
-  // -----------------------------
-  mod1.start(t0);
-  mod2.start(t0);
-  carrier.start(t0);
+    mod2.connect(mod2Gain);
+    mod2Gain.connect(mod1.frequency);
 
-  const tStop = t0 + noteLength;
-  mod1.stop(tStop);
-  mod2.stop(tStop);
-  carrier.stop(tStop);
+    // -----------------------------
+    //  CARRIER
+    // -----------------------------
+    const carrier = ctx.createOscillator();
+    carrier.type = "sine";
+    carrier.frequency.setValueAtTime(carrierFreq, t0);
 
-  return { node: carrier };
+    mod1Gain.connect(carrier.frequency);
+
+    // -----------------------------
+    //  START / STOP
+    // -----------------------------
+    mod1.start(t0);
+    mod2.start(t0);
+    carrier.start(t0);
+
+    const tStop = t0 + noteLength;
+    mod1.stop(tStop);
+    mod2.stop(tStop);
+    carrier.stop(tStop);
+
+    carriers.push(carrier);
+  }
+
+  // Merge L/R carriers into stereo
+  const merger = ctx.createChannelMerger(2);
+  carriers[0].connect(merger, 0, 0); // Left
+  carriers[1].connect(merger, 0, 1); // Right
+
+  return { node: merger }; // Return stereo node
 };

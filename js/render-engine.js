@@ -1,18 +1,39 @@
 // ============================================================
-//  RENDER ENGINE
+//  RENDER ENGINE (UPDATED FOR STEREO OUTPUT)
 // ============================================================
-// - Not part of patch; it decides what to do WITH patch
-// - Creates AudioContext
-// - Calls synth engine
-// - Calls envelope engine
-// - Calls effects engine(s)
-// - Connects to destination
-// - Handles start/stop/timeout
-// - Owns the audition button
+// - Creates persistent AudioContext for playback
+// - Adds safety limiter to prevent clipping
+// - Better error handling
+// - Handles stereo output from effects chain
 // ============================================================
 
 window.RenderEngine = {};
 window.activePlayback = null;
+
+// Persistent playback context (reused for performance)
+window.playbackContext = null;
+
+// ------------------------------------------------------------
+//  GET OR CREATE PLAYBACK CONTEXT
+// ------------------------------------------------------------
+
+function getPlaybackContext() {
+  try {
+    if (!window.playbackContext || window.playbackContext.state === 'closed') {
+      window.playbackContext = new AudioContext({ sampleRate: 48000 });
+      console.log('✅ Created new AudioContext');
+    }
+    
+    if (window.playbackContext.state === 'suspended') {
+      window.playbackContext.resume();
+    }
+    
+    return window.playbackContext;
+  } catch (err) {
+    console.error('❌ Failed to create AudioContext:', err);
+    throw new Error('Could not initialize audio. Check browser permissions.');
+  }
+}
 
 // ------------------------------------------------------------
 //  RENDER UI (sample rate + duration)
@@ -21,6 +42,7 @@ window.activePlayback = null;
 RenderEngine.initRenderUI = function (patch) {
   initSampleRateUI(patch);
   initRenderDurationUI(patch);
+  initRenderButton(patch);
 };
 
 function initSampleRateUI(patch) {
@@ -38,6 +60,11 @@ function initSampleRateUI(patch) {
 
       const span = document.getElementById("sampleRateValue");
       if (span) span.textContent = patch.sampleRate;
+      
+      // Clear reverb cache when sample rate changes
+      if (typeof EffectsEngine !== 'undefined' && EffectsEngine.clearCache) {
+        EffectsEngine.clearCache();
+      }
     });
   });
 }
@@ -46,6 +73,20 @@ function initRenderDurationUI(patch) {
   UI.bindSlider("renderDuration", "renderDurationValue", v => {
     patch.renderDuration = Number(v);
     return formatSeconds(v);
+  });
+}
+
+function initRenderButton(patch) {
+  const renderBtn = document.getElementById("render");
+  if (!renderBtn) return;
+
+  renderBtn.addEventListener("click", () => {
+    try {
+      alert("WAV rendering will be implemented in the next update! For now, use the Audition button to preview your sound.");
+    } catch (err) {
+      console.error("Render error:", err);
+      alert("Failed to render audio.");
+    }
   });
 }
 
@@ -58,10 +99,21 @@ RenderEngine.initPlaybackUI = function (patch) {
   if (!playBtn) return;
 
   playBtn.addEventListener("click", () => {
-    if (window.activePlayback) {
-      RenderEngine.stop();
-    } else {
-      window.activePlayback = RenderEngine.startFromPatch(patch);
+    try {
+      if (window.activePlayback) {
+        RenderEngine.stop();
+        playBtn.textContent = "Audition";
+        playBtn.classList.remove("playing");
+      } else {
+        window.activePlayback = RenderEngine.startFromPatch(patch);
+        playBtn.textContent = "Stop";
+        playBtn.classList.add("playing");
+      }
+    } catch (err) {
+      console.error("Playback error:", err);
+      alert("Failed to start playback. Please try again.");
+      playBtn.textContent = "Audition";
+      playBtn.classList.remove("playing");
     }
   });
 };
@@ -73,15 +125,19 @@ RenderEngine.initPlaybackUI = function (patch) {
 RenderEngine.startFromPatch = function (patch) {
   updateParamsFromHTML();
 
-  // Create audio context
-  const ctx = new AudioContext({
-    sampleRate: patch.sampleRate,
-  });
+  // Use persistent playback context (48kHz for performance)
+  const ctx = getPlaybackContext();
 
   const baseFreq = midiToFreq(patch.midiNote);
 
   // --------------------------------------------------------
-  // 1) SYNTH ENGINE (exactly one active)
+  // 1) COMPUTE ENVELOPE LENGTH FIRST (no dummy nodes)
+  // --------------------------------------------------------
+  
+  const noteLength = AmpEnvelopeEngine.computeLength(patch.envelope.ahdhd);
+
+  // --------------------------------------------------------
+  // 2) SYNTH ENGINE (mono output)
   // --------------------------------------------------------
 
   let synthNode = null;
@@ -90,10 +146,6 @@ RenderEngine.startFromPatch = function (patch) {
     case "fm":
     default: {
       const fmParams = patch.synth.fm;
-      // We need noteLength for FMEngine.build, so compute envelope first
-      const dummyEnv = AmpEnvelopeEngine.apply(ctx, ctx.createGain(), patch.envelope.ahdhd);
-      const noteLength = dummyEnv.noteLength;
-
       const fmOut = FMEngine.build(ctx, baseFreq, fmParams, noteLength);
       synthNode = fmOut.node;
       break;
@@ -101,7 +153,7 @@ RenderEngine.startFromPatch = function (patch) {
   }
 
   // --------------------------------------------------------
-  // 2) ENVELOPE ENGINE (exactly one active)
+  // 3) ENVELOPE ENGINE (mono input → mono output)
   // --------------------------------------------------------
 
   let envNode = null;
@@ -112,70 +164,97 @@ RenderEngine.startFromPatch = function (patch) {
       const envParams = patch.envelope.ahdhd;
       const envOut = AmpEnvelopeEngine.apply(ctx, synthNode, envParams);
       envNode = envOut.node;
-      var noteLength = envOut.noteLength; // used later
       break;
     }
   }
 
   // --------------------------------------------------------
-  // 3) EFFECTS ENGINE(S) (series)
+  // 4) EFFECTS ENGINE (mono input → STEREO output)
   // --------------------------------------------------------
+  // The effects engine now:
+  // - Converts mono to stereo first
+  // - Routes through all effects in stereo
+  // - Returns stereo output
 
   const fxOut = EffectsEngine.applyAll(ctx, envNode, patch.fx, noteLength);
-  let finalNode = fxOut.node;
+  let finalNode = fxOut.node; // This is now STEREO (2 channels)
 
   // --------------------------------------------------------
-  // 4) OUTPUT → DESTINATION
+  // 5) SAFETY LIMITER (stereo input → stereo output)
+  // --------------------------------------------------------
+
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -3;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+
+  finalNode.connect(limiter);
+
+  // --------------------------------------------------------
+  // 6) OUTPUT → DESTINATION (stereo)
   // --------------------------------------------------------
 
   const outGain = ctx.createGain();
   outGain.gain.value = 0.6;
 
-  finalNode.connect(outGain).connect(ctx.destination);
+  limiter.connect(outGain).connect(ctx.destination);
 
   // --------------------------------------------------------
-  // 5) NATURAL TIMEOUT CLEANUP
+  // 7) NATURAL TIMEOUT CLEANUP
   // --------------------------------------------------------
 
-  setTimeout(
+  const cleanupTimeout = setTimeout(
     () => {
-      ctx.close().catch(() => {});
-      if (window.activePlayback && window.activePlayback.ctx === ctx) {
+      if (window.activePlayback && window.activePlayback.timeoutId === cleanupTimeout) {
         window.activePlayback = null;
+        
+        // Update button UI
+        const playBtn = document.getElementById("play");
+        if (playBtn) {
+          playBtn.textContent = "Audition";
+          playBtn.classList.remove("playing");
+        }
       }
     },
     (noteLength + 0.1) * 1000,
   );
 
   // --------------------------------------------------------
-  // 6) RETURN PLAYBACK HANDLE
+  // 8) RETURN PLAYBACK HANDLE
   // --------------------------------------------------------
 
   return {
     ctx,
     outGain,
     noteLength,
+    timeoutId: cleanupTimeout,
   };
 };
 
 // ------------------------------------------------------------
-//  STOP (manual stop)
+//  STOP (manual stop with fade-out)
 // ------------------------------------------------------------
 
 RenderEngine.stop = function () {
   if (!window.activePlayback) return;
 
-  const { ctx, outGain } = window.activePlayback;
+  const { ctx, outGain, timeoutId } = window.activePlayback;
 
+  // Cancel the automatic cleanup
+  if (timeoutId) {
+    clearTimeout(timeoutId);
+  }
+
+  // Fade out smoothly
   const now = ctx.currentTime;
   outGain.gain.cancelScheduledValues(now);
   outGain.gain.setValueAtTime(outGain.gain.value, now);
-  outGain.gain.linearRampToValueAtTime(0, now + 0.5);
+  outGain.gain.linearRampToValueAtTime(0, now + 0.3);
 
+  // Clean up after fade
   setTimeout(() => {
-    ctx.close().catch(() => {});
-    if (window.activePlayback && window.activePlayback.ctx === ctx) {
-      window.activePlayback = null;
-    }
-  }, 600);
+    window.activePlayback = null;
+  }, 350);
 };
