@@ -169,18 +169,29 @@ RenderEngine.startFromPatch = function (patch) {
   }
 
   // --------------------------------------------------------
-  // 4) EFFECTS ENGINE (mono input → STEREO output)
+  // 4) FILTER ENGINE (mono input → mono output)
+  // --------------------------------------------------------
+
+  let filteredNode = envNode;
+
+  if (typeof FilterEngine !== 'undefined' && patch.filter) {
+    const filterOut = FilterEngine.apply(ctx, envNode, patch.filter);
+    filteredNode = filterOut.node;
+  }
+
+  // --------------------------------------------------------
+  // 5) EFFECTS ENGINE (mono input → STEREO output)
   // --------------------------------------------------------
   // The effects engine now:
   // - Converts mono to stereo first
   // - Routes through all effects in stereo
   // - Returns stereo output
 
-  const fxOut = EffectsEngine.applyAll(ctx, envNode, patch.fx, noteLength);
+  const fxOut = EffectsEngine.applyAll(ctx, filteredNode, patch.fx, noteLength);
   let finalNode = fxOut.node; // This is now STEREO (2 channels)
 
   // --------------------------------------------------------
-  // 5) SAFETY LIMITER (stereo input → stereo output)
+  // 6) SAFETY LIMITER (stereo input → stereo output)
   // --------------------------------------------------------
 
   const limiter = ctx.createDynamicsCompressor();

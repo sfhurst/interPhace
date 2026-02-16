@@ -52,7 +52,15 @@ FMEngine.register = function (patch) {
       { ratio: 2.0, gain: 0, wave: "sine" },
     ],
     fmDepthPreset: 0,
-    stereoWidth: 0, // NEW: 0-100 for stereo spread
+    carrierVolume: 100, // 0-127 (MIDI-style)
+    harmonic1: {
+      gain: 0,      // 0-100
+      noteOffset: 0, // -36 to +36 semitones
+    },
+    harmonic2: {
+      gain: 0,      // 0-100
+      noteOffset: 0, // -36 to +36 semitones
+    },
   };
 };
 
@@ -76,21 +84,6 @@ FMEngine.initUI = function (patch) {
     return Math.round(v) + "%";
   });
 
-  UI.bindSlider("detuneAmount", "detuneAmountValue", v => {
-    patch.fx.detune.amount = Number(v);
-    return Math.round(v) + "%";
-  });
-
-  UI.bindSlider("chorusAmount", "chorusAmountValue", v => {
-    patch.fx.chorus.amount = Number(v);
-    return Math.round(v) + "%";
-  });
-
-  UI.bindSlider("reverbAmount", "reverbAmountValue", v => {
-    patch.fx.reverb.amount = Number(v);
-    return Math.round(v) + "%";
-  });
-
   // FM depth preset slider
   UI.bindSlider("fmDepthPreset", "fmDepthPresetValue", v => {
     fm.fmDepthPreset = Number(v);
@@ -106,18 +99,6 @@ FMEngine.initUI = function (patch) {
 
     return names[v] || "Preset";
   });
-
-  // NEW: Stereo width slider (if you add it to HTML)
-  const stereoWidthSlider = document.getElementById("stereoWidth");
-  const stereoWidthValue = document.getElementById("stereoWidthValue");
-  if (stereoWidthSlider && stereoWidthValue) {
-    stereoWidthSlider.addEventListener("input", () => {
-      fm.stereoWidth = Number(stereoWidthSlider.value);
-      stereoWidthValue.textContent = Math.round(fm.stereoWidth) + "%";
-    });
-    stereoWidthSlider.value = fm.stereoWidth;
-    stereoWidthValue.textContent = Math.round(fm.stereoWidth) + "%";
-  }
 };
 
 function initFMRatioUI(fm) {
@@ -164,7 +145,7 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
     return w === "saw" ? "sawtooth" : w;
   }
 
-  // FM index lookup table
+  // FM index lookup table (101 values: 0-100)
   // prettier-ignore
   const FM_INDEX_TABLE = [
     0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09,
@@ -176,11 +157,14 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
     3.29,3.41,3.54,3.67,3.80,3.94,4.08,4.22,4.37,4.52,
     4.67,4.83,4.99,5.15,5.32,5.49,5.66,5.84,6.02,6.20,
     6.39,6.58,6.77,6.97,7.17,7.38,7.59,7.80,8.02,8.24,
-    8.47,8.70,8.94,9.18,9.43,9.68,9.94,10.20,10.47,10.74
+    8.47,8.70,8.94,9.18,9.43,9.68,9.94,10.20,10.47,10.74,
+    11.00  // 101st value for slider position 100
   ];
 
   function computeDeviation(modFreq, slider) {
-    return FM_INDEX_TABLE[slider] * modFreq;
+    // Clamp slider to valid range to prevent overflow
+    const safeSlider = Math.min(Math.max(slider, 0), 100);
+    return FM_INDEX_TABLE[safeSlider] * modFreq;
   }
 
   // freq → MIDI
@@ -221,85 +205,120 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
   const t0 = ctx.currentTime;
   const keyScale = computeKeyScale(baseFreq);
 
-  // NEW: Apply stereo width (slight frequency offset between L/R)
-  const stereoDetune = (fmParams.stereoWidth || 0) / 100; // 0-1
-  const freqOffset = baseFreq * 0.002 * stereoDetune; // Up to 0.2% detune
+  // -----------------------------
+  //  MODULATOR 1
+  // -----------------------------
+  const mod1Freq = baseFreq * fmParams.modulators[0].ratio;
 
-  // We'll return TWO carriers for stereo (L/R)
-  const carriers = [];
+  const mod1 = ctx.createOscillator();
+  mod1.type = normalizeWave(fmParams.modulators[0].wave);
+  mod1.frequency.setValueAtTime(mod1Freq, t0);
 
-  // Create LEFT and RIGHT carriers
-  for (let channel = 0; channel < 2; channel++) {
-    const carrierFreq = channel === 0 
-      ? baseFreq - freqOffset  // Left: slightly flat
-      : baseFreq + freqOffset; // Right: slightly sharp
+  const mod1Deviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain) * keyScale;
 
-    // -----------------------------
-    //  MODULATOR 1
-    // -----------------------------
-    const mod1Freq = carrierFreq * fmParams.modulators[0].ratio;
+  const mod1Gain = ctx.createGain();
+  mod1Gain.gain.setValueAtTime(mod1Deviation, t0);
 
-    const mod1 = ctx.createOscillator();
-    mod1.type = normalizeWave(fmParams.modulators[0].wave);
-    mod1.frequency.setValueAtTime(mod1Freq, t0);
+  // Apply preset-based FM depth envelope
+  const preset = FM_DEPTH_PRESETS[fmParams.fmDepthPreset];
 
-    const mod1Deviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain) * keyScale;
+  applyFMDepthEnvelope(mod1Gain.gain, mod1Deviation, t0, preset.attack, preset.decay, preset.index, mod1Freq);
 
-    const mod1Gain = ctx.createGain();
-    mod1Gain.gain.setValueAtTime(mod1Deviation, t0);
+  mod1.connect(mod1Gain);
 
-    // Apply preset-based FM depth envelope
-    const preset = FM_DEPTH_PRESETS[fmParams.fmDepthPreset];
+  // -----------------------------
+  //  MODULATOR 2 → MODULATOR 1
+  // -----------------------------
+  const mod2Freq = baseFreq * fmParams.modulators[1].ratio;
 
-    applyFMDepthEnvelope(mod1Gain.gain, mod1Deviation, t0, preset.attack, preset.decay, preset.index, mod1Freq);
+  const mod2 = ctx.createOscillator();
+  mod2.type = normalizeWave(fmParams.modulators[1].wave);
+  mod2.frequency.setValueAtTime(mod2Freq, t0);
 
-    mod1.connect(mod1Gain);
+  const mod2Deviation = computeDeviation(mod2Freq, fmParams.modulators[1].gain) * keyScale;
 
-    // -----------------------------
-    //  MODULATOR 2 → MODULATOR 1
-    // -----------------------------
-    const mod2Freq = carrierFreq * fmParams.modulators[1].ratio;
+  const mod2Gain = ctx.createGain();
+  mod2Gain.gain.setValueAtTime(mod2Deviation, t0);
 
-    const mod2 = ctx.createOscillator();
-    mod2.type = normalizeWave(fmParams.modulators[1].wave);
-    mod2.frequency.setValueAtTime(mod2Freq, t0);
+  mod2.connect(mod2Gain);
+  mod2Gain.connect(mod1.frequency);
 
-    const mod2Deviation = computeDeviation(mod2Freq, fmParams.modulators[1].gain) * keyScale;
+  // -----------------------------
+  //  CARRIER
+  // -----------------------------
+  const carrier = ctx.createOscillator();
+  carrier.type = "sine";
+  carrier.frequency.setValueAtTime(baseFreq, t0);
 
-    const mod2Gain = ctx.createGain();
-    mod2Gain.gain.setValueAtTime(mod2Deviation, t0);
+  mod1Gain.connect(carrier.frequency);
 
-    mod2.connect(mod2Gain);
-    mod2Gain.connect(mod1.frequency);
+  // -----------------------------
+  //  START / STOP
+  // -----------------------------
+  mod1.start(t0);
+  mod2.start(t0);
+  carrier.start(t0);
 
-    // -----------------------------
-    //  CARRIER
-    // -----------------------------
-    const carrier = ctx.createOscillator();
-    carrier.type = "sine";
-    carrier.frequency.setValueAtTime(carrierFreq, t0);
+  const tStop = t0 + noteLength;
+  mod1.stop(tStop);
+  mod2.stop(tStop);
+  carrier.stop(tStop);
 
-    mod1Gain.connect(carrier.frequency);
+  // Apply carrier volume (0-127 MIDI style)
+  const carrierGain = ctx.createGain();
+  carrierGain.gain.value = (fmParams.carrierVolume / 127) * 0.8; // Scale to 0-0.8
+  carrier.connect(carrierGain);
 
-    // -----------------------------
-    //  START / STOP
-    // -----------------------------
-    mod1.start(t0);
-    mod2.start(t0);
-    carrier.start(t0);
+  // Add harmonics if enabled
+  let outputNode = carrierGain;
 
-    const tStop = t0 + noteLength;
-    mod1.stop(tStop);
-    mod2.stop(tStop);
-    carrier.stop(tStop);
+  const harmonic1Enabled = fmParams.harmonic1 && fmParams.harmonic1.gain > 0;
+  const harmonic2Enabled = fmParams.harmonic2 && fmParams.harmonic2.gain > 0;
 
-    carriers.push(carrier);
+  if (harmonic1Enabled || harmonic2Enabled) {
+    const mixer = ctx.createGain();
+    carrierGain.connect(mixer);
+
+    // Harmonic 1
+    if (harmonic1Enabled) {
+      const h1Freq = baseFreq * Math.pow(2, fmParams.harmonic1.noteOffset / 12);
+      const h1Gain = fmParams.harmonic1.gain / 100;
+
+      const h1Osc = ctx.createOscillator();
+      h1Osc.type = "sine";
+      h1Osc.frequency.setValueAtTime(h1Freq, t0);
+
+      const h1GainNode = ctx.createGain();
+      h1GainNode.gain.value = h1Gain * 0.5;
+
+      h1Osc.connect(h1GainNode);
+      h1GainNode.connect(mixer);
+
+      h1Osc.start(t0);
+      h1Osc.stop(tStop);
+    }
+
+    // Harmonic 2
+    if (harmonic2Enabled) {
+      const h2Freq = baseFreq * Math.pow(2, fmParams.harmonic2.noteOffset / 12);
+      const h2Gain = fmParams.harmonic2.gain / 100;
+
+      const h2Osc = ctx.createOscillator();
+      h2Osc.type = "sine";
+      h2Osc.frequency.setValueAtTime(h2Freq, t0);
+
+      const h2GainNode = ctx.createGain();
+      h2GainNode.gain.value = h2Gain * 0.5;
+
+      h2Osc.connect(h2GainNode);
+      h2GainNode.connect(mixer);
+
+      h2Osc.start(t0);
+      h2Osc.stop(tStop);
+    }
+
+    outputNode = mixer;
   }
 
-  // Merge L/R carriers into stereo
-  const merger = ctx.createChannelMerger(2);
-  carriers[0].connect(merger, 0, 0); // Left
-  carriers[1].connect(merger, 0, 1); // Right
-
-  return { node: merger }; // Return stereo node
+  return { node: outputNode }; // Return MONO node
 };

@@ -4,9 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>interPhace – hurst.audio</title>
-    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="css/style.css" />
   </head>
- 
+
   <body>
     <main class="app">
       <!-- HEADER / BRANDING -->
@@ -15,7 +15,7 @@
         <button id="play" class="play-btn">Audition</button>
         <div class="instrument-right">hurst.audio</div>
       </header>
- 
+
       <!-- PITCH -->
       <section class="panel" data-section="pitch">
         <button class="panel-header">Pitch</button>
@@ -29,9 +29,77 @@
               <input id="rootNote" type="range" min="21" max="108" value="60" />
             </div>
           </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Tempo</label>
+              <span class="control-value" id="tempoValue">70 BPM</span>
+            </div>
+            <div class="control-body">
+              <input id="tempo" type="range" min="40" max="200" value="70" />
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Carrier Volume</label>
+              <span class="control-value" id="carrierVolumeValue">100</span>
+            </div>
+            <div class="control-body">
+              <input id="carrierVolume" type="range" min="0" max="127" step="1" value="100" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="mod-block">
+            <h3 class="mod-title">Harmonics</h3>
+
+            <!-- HARMONIC 1 -->
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Harmonic 1 Gain</label>
+                <span class="control-value" id="harmonic1GainValue">0%</span>
+              </div>
+              <div class="control-body">
+                <input id="harmonic1Gain" type="range" min="0" max="100" value="0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Harmonic 1 Offset</label>
+                <span class="control-value" id="harmonic1OffsetValue">+0 ST</span>
+              </div>
+              <div class="control-body">
+                <input id="harmonic1Offset" type="range" min="-36" max="36" step="1" value="0" />
+              </div>
+            </div>
+
+            <!-- HARMONIC 2 -->
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Harmonic 2 Gain</label>
+                <span class="control-value" id="harmonic2GainValue">0%</span>
+              </div>
+              <div class="control-body">
+                <input id="harmonic2Gain" type="range" min="0" max="100" value="0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Harmonic 2 Offset</label>
+                <span class="control-value" id="harmonic2OffsetValue">+0 ST</span>
+              </div>
+              <div class="control-body">
+                <input id="harmonic2Offset" type="range" min="-36" max="36" step="1" value="0" />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
- 
+
       <!-- ENVELOPE (PRIMARY) -->
       <section class="panel" data-section="envPrimary">
         <button class="panel-header">Envelope (Primary)</button>
@@ -45,7 +113,7 @@
               <input id="attack1" type="range" min="0" max="2" step="0.002" value="0.04" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Hold 1</label>
@@ -55,7 +123,7 @@
               <input id="hold1" type="range" min="0" max="6" step="0.002" value="0.00" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 1</label>
@@ -65,7 +133,7 @@
               <input id="decay1" type="range" min="0" max="2" step="0.002" value="0.80" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 1 Target (%)</label>
@@ -75,7 +143,7 @@
               <input id="decay1Target" type="range" min="0" max="100" value="10" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Hold 2</label>
@@ -85,7 +153,7 @@
               <input id="hold2" type="range" min="0" max="6" step="0.002" value="1.5" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Decay 2</label>
@@ -95,7 +163,7 @@
               <input id="decay2" type="range" min="0" max="2" step="0.002" value="0.9" />
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Time Multiplier</label>
@@ -106,27 +174,25 @@
             </div>
           </div>
 
-          <div class="control">
-            <div class="control-top">
-              <label class="control-label">Envelope Personality</label>
-              <span class="control-value" id="envelopePersonalityValue">Clean</span>
-            </div>
-            <div class="control-body">
-              <input id="envelopePersonality" type="range" min="0" max="19" step="1" value="0" />
-            </div>
-          </div>
- 
           <div class="divider"></div>
- 
+
           <div class="preset-row">
             <button class="preset-btn" data-env="blip">Blip</button>
+            <button class="preset-btn" data-env="tick">Tick</button>
+            <button class="preset-btn" data-env="pluck">Pluck</button>
             <button class="preset-btn active" data-env="piano">Piano</button>
+            <button class="preset-btn" data-env="epiano">E.Piano</button>
+            <button class="preset-btn" data-env="bell">Bell</button>
             <button class="preset-btn" data-env="pad">Pad</button>
+            <button class="preset-btn" data-env="string">String</button>
+            <button class="preset-btn" data-env="choir">Choir</button>
+            <button class="preset-btn" data-env="brass">Brass</button>
             <button class="preset-btn" data-env="drone">Drone</button>
+            <button class="preset-btn" data-env="wash">Wash</button>
           </div>
         </div>
       </section>
- 
+
       <!-- ENGINE -->
       <section class="panel" data-section="engine">
         <button class="panel-header">Engine</button>
@@ -136,14 +202,14 @@
             <button class="engine-btn" data-engine="sub">Subtractive</button>
             <button class="engine-btn" data-engine="sampler">Sampler</button>
           </div>
- 
+
           <div class="divider"></div>
- 
+
           <div class="engine-panel active" id="engine-fm">
             <!-- MODULATOR 1 -->
             <div class="mod-block">
               <h3 class="mod-title">Modulator 1</h3>
- 
+
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
@@ -152,6 +218,8 @@
                 <div class="control-body">
                   <input id="mod1Gain" type="range" min="0" max="100" value="0" />
                 </div>
+              </div>
+              <div class="control">
                 <div class="control-top">
                   <label class="control-label">FM Depth</label>
                   <span class="control-value" id="fmDepthPresetValue">0%</span>
@@ -160,7 +228,7 @@
                   <input id="fmDepthPreset" type="range" min="0" max="20" value="0" />
                 </div>
               </div>
- 
+
               <div class="control">
                 <span class="control-label">Ratio</span>
               </div>
@@ -175,8 +243,10 @@
                 <button class="ratio-btn" data-ratio="3">3</button>
                 <button class="ratio-btn" data-ratio="3.5">3.5</button>
                 <button class="ratio-btn" data-ratio="4">4</button>
+                <button class="ratio-btn" data-ratio="5">5</button>
+                <button class="ratio-btn" data-ratio="7">7</button>
               </div>
- 
+
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
@@ -186,13 +256,13 @@
                 <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
- 
+
             <div class="divider"></div>
- 
+
             <!-- MODULATOR 2 -->
             <div class="mod-block">
               <h3 class="mod-title">Modulator 2</h3>
- 
+
               <div class="control">
                 <div class="control-top">
                   <label class="control-label">Gain</label>
@@ -202,7 +272,7 @@
                   <input id="mod2Gain" type="range" min="0" max="100" value="0" />
                 </div>
               </div>
- 
+
               <div class="control">
                 <span class="control-label">Ratio</span>
               </div>
@@ -217,8 +287,10 @@
                 <button class="ratio-btn" data-ratio="3">3</button>
                 <button class="ratio-btn" data-ratio="3.5">3.5</button>
                 <button class="ratio-btn" data-ratio="4">4</button>
+                <button class="ratio-btn" data-ratio="5">5</button>
+                <button class="ratio-btn" data-ratio="7">7</button>
               </div>
- 
+
               <div class="control">
                 <span class="control-label">Wave</span>
               </div>
@@ -228,79 +300,241 @@
                 <button class="ratio-btn" data-wave="saw">Saw</button>
               </div>
             </div>
-
-            <div class="divider"></div>
-
-            <!-- STEREO WIDTH -->
-            <div class="control">
-              <div class="control-top">
-                <label class="control-label">Stereo Width</label>
-                <span class="control-value" id="stereoWidthValue">0%</span>
-              </div>
-              <div class="control-body">
-                <input id="stereoWidth" type="range" min="0" max="100" value="0" />
-              </div>
-            </div>
           </div>
- 
+
           <div class="engine-panel" id="engine-sub">
             <!-- Subtractive engine UI -->
           </div>
- 
+
           <div class="engine-panel" id="engine-sampler">
             <!-- Sampler engine UI -->
           </div>
         </div>
       </section>
- 
+
       <!-- FILTER -->
       <section class="panel" data-section="filter">
         <button class="panel-header">Filter</button>
         <div class="panel-body" id="filterSection">
-          <!-- Filter controls go here -->
+          <!-- LOWPASS / HIGHPASS -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Lowpass Frequency</label>
+              <span class="control-value" id="lpFreqValue">20kHz</span>
+            </div>
+            <div class="control-body">
+              <input id="lpFreq" type="range" min="0" max="25" step="1" value="25" />
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Highpass Frequency</label>
+              <span class="control-value" id="hpFreqValue">20Hz</span>
+            </div>
+            <div class="control-body">
+              <input id="hpFreq" type="range" min="0" max="25" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- EQ BAND SELECTOR -->
+          <div class="engine-select">
+            <button class="eq-band-btn active" data-eq="eq1">Band 1</button>
+            <button class="eq-band-btn" data-eq="eq2">Band 2</button>
+            <button class="eq-band-btn" data-eq="eq3">Band 3</button>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- EQ 1 PANEL -->
+          <div class="eq-band-panel active" id="eq-panel-eq1">
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Frequency</label>
+                <span class="control-value" id="eq1FreqValue">82Hz (E2)</span>
+              </div>
+              <div class="control-body">
+                <input id="eq1Freq" type="range" min="0" max="47" step="1" value="18" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Gain</label>
+                <span class="control-value" id="eq1GainValue">0dB</span>
+              </div>
+              <div class="control-body">
+                <input id="eq1Gain" type="range" min="-12" max="12" step="0.5" value="0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Q</label>
+                <span class="control-value" id="eq1QValue">1.0</span>
+              </div>
+              <div class="control-body">
+                <input id="eq1Q" type="range" min="0.5" max="10" step="0.1" value="1.0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <span class="control-label">Frequency Range</span>
+            </div>
+            <div class="ratio-row">
+              <button class="ratio-btn active" data-range="low">Low</button>
+              <button class="ratio-btn" data-range="mid">Mid</button>
+              <button class="ratio-btn" data-range="high">High</button>
+              <button class="ratio-btn" data-range="all">All</button>
+            </div>
+          </div>
+
+          <!-- EQ 2 PANEL -->
+          <div class="eq-band-panel" id="eq-panel-eq2">
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Frequency</label>
+                <span class="control-value" id="eq2FreqValue">440Hz (A4)</span>
+              </div>
+              <div class="control-body">
+                <input id="eq2Freq" type="range" min="0" max="35" step="1" value="9" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Gain</label>
+                <span class="control-value" id="eq2GainValue">0dB</span>
+              </div>
+              <div class="control-body">
+                <input id="eq2Gain" type="range" min="-12" max="12" step="0.5" value="0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Q</label>
+                <span class="control-value" id="eq2QValue">1.0</span>
+              </div>
+              <div class="control-body">
+                <input id="eq2Q" type="range" min="0.5" max="10" step="0.1" value="1.0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <span class="control-label">Frequency Range</span>
+            </div>
+            <div class="ratio-row">
+              <button class="ratio-btn" data-range="low">Low</button>
+              <button class="ratio-btn active" data-range="mid">Mid</button>
+              <button class="ratio-btn" data-range="high">High</button>
+              <button class="ratio-btn" data-range="all">All</button>
+            </div>
+          </div>
+
+          <!-- EQ 3 PANEL -->
+          <div class="eq-band-panel" id="eq-panel-eq3">
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Frequency</label>
+                <span class="control-value" id="eq3FreqValue">4.2kHz (C8)</span>
+              </div>
+              <div class="control-body">
+                <input id="eq3Freq" type="range" min="0" max="31" step="1" value="12" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Gain</label>
+                <span class="control-value" id="eq3GainValue">0dB</span>
+              </div>
+              <div class="control-body">
+                <input id="eq3Gain" type="range" min="-12" max="12" step="0.5" value="0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Q</label>
+                <span class="control-value" id="eq3QValue">1.0</span>
+              </div>
+              <div class="control-body">
+                <input id="eq3Q" type="range" min="0.5" max="10" step="0.1" value="1.0" />
+              </div>
+            </div>
+
+            <div class="control">
+              <span class="control-label">Frequency Range</span>
+            </div>
+            <div class="ratio-row">
+              <button class="ratio-btn" data-range="low">Low</button>
+              <button class="ratio-btn" data-range="mid">Mid</button>
+              <button class="ratio-btn active" data-range="high">High</button>
+              <button class="ratio-btn" data-range="all">All</button>
+            </div>
+          </div>
         </div>
       </section>
- 
+
       <!-- EFFECTS -->
       <section class="panel" data-section="effects">
         <button class="panel-header">Effects</button>
         <div class="panel-body" id="effectsSection">
-          <!--  -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Stereo Width</label>
+              <span class="control-value" id="stereoWidthPresetValue">Mono</span>
+            </div>
+            <div class="control-body">
+              <input id="stereoWidthPreset" type="range" min="0" max="15" step="1" value="0" />
+            </div>
+          </div>
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Detune</label>
-              <span class="control-value" id="detuneAmountValue">0%</span>
+              <span class="control-value" id="detunePresetValue">Off</span>
             </div>
             <div class="control-body">
-              <input id="detuneAmount" type="range" min="0" max="100" step="1" value="0" />
+              <input id="detunePreset" type="range" min="0" max="15" step="1" value="0" />
             </div>
           </div>
-          <!--  -->
-          <!--  -->
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Chorus</label>
-              <span class="control-value" id="chorusAmountValue">0%</span>
+              <span class="control-value" id="chorusPresetValue">Off</span>
             </div>
             <div class="control-body">
-              <input id="chorusAmount" type="range" min="0" max="100" step="1" value="0" />
+              <input id="chorusPreset" type="range" min="0" max="15" step="1" value="0" />
             </div>
           </div>
-          <!--  -->
-          <!--  -->
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Delay</label>
+              <span class="control-value" id="delayPresetValue">Off</span>
+            </div>
+            <div class="control-body">
+              <input id="delayPreset" type="range" min="0" max="15" step="1" value="0" />
+            </div>
+          </div>
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Reverb</label>
-              <span class="control-value" id="reverbAmountValue">0%</span>
+              <span class="control-value" id="reverbPresetValue">Off</span>
             </div>
             <div class="control-body">
-              <input id="reverbAmount" type="range" min="0" max="100" step="1" value="0" />
+              <input id="reverbPreset" type="range" min="0" max="15" step="1" value="0" />
             </div>
           </div>
-          <!--  -->
         </div>
       </section>
- 
+
       <!-- RENDER -->
       <section class="panel" data-section="render">
         <button class="panel-header">Render</button>
@@ -309,7 +543,7 @@
             <div class="control-top">
               <label class="control-label">Sample Rate</label>
             </div>
- 
+
             <div class="ratio-row" id="sampleRateRow">
               <button class="ratio-btn" data-sr="44100">44.1k</button>
               <button class="ratio-btn" data-sr="48000">48k</button>
@@ -319,7 +553,7 @@
               <button class="ratio-btn active" data-sr="192000">192k</button>
             </div>
           </div>
- 
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Duration (s)</label>
@@ -329,19 +563,19 @@
               <input id="renderDuration" type="range" min="0.1" max="30" step="0.1" value="8.0" />
             </div>
           </div>
- 
+
           <button id="render" class="render-btn">Render</button>
         </div>
       </section>
     </main>
- 
+
     <!-- JS -->
-    <script src="js/main.js" defer></script>
- 
-    <script src="js/carrier-engine.js" defer></script>
-    <script src="js/fm-engine.js" defer></script>
-    <script src="js/carrier-envelope-engine.js" defer></script>
-    <script src="js/effects-engine.js" defer></script>
-    <script src="js/render-engine.js" defer></script>
+    <script src="js/main.js"></script>
+    <script src="js/carrier-engine.js"></script>
+    <script src="js/fm-engine.js"></script>
+    <script src="js/carrier-envelope-engine.js"></script>
+    <script src="js/filter-engine.js"></script>
+    <script src="js/effects-engine.js"></script>
+    <script src="js/render-engine.js"></script>
   </body>
 </html>

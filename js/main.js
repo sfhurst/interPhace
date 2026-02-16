@@ -130,6 +130,65 @@ window.initCarrierUI = function () {
 };
 
 // ============================================================
+//  TEMPO UI
+// ============================================================
+
+window.initTempoUI = function () {
+  const tempo = document.getElementById("tempo");
+  const valueSpan = document.getElementById("tempoValue");
+  if (!tempo) return;
+
+  const update = () => {
+    patch.tempo = Number(tempo.value);
+    if (valueSpan) {
+      valueSpan.textContent = patch.tempo + " BPM";
+    }
+  };
+
+  tempo.addEventListener("input", update);
+  update();
+};
+
+// ============================================================
+//  CARRIER VOLUME UI
+// ============================================================
+
+window.initCarrierVolumeUI = function () {
+  UI.bindSlider("carrierVolume", "carrierVolumeValue", v => {
+    patch.synth.fm.carrierVolume = Number(v);
+    return Math.round(v);
+  });
+};
+
+// ============================================================
+//  HARMONICS UI
+// ============================================================
+
+window.initHarmonicsUI = function () {
+  // Harmonic 1
+  UI.bindSlider("harmonic1Gain", "harmonic1GainValue", v => {
+    patch.synth.fm.harmonic1.gain = Number(v);
+    return Math.round(v) + "%";
+  });
+
+  UI.bindSlider("harmonic1Offset", "harmonic1OffsetValue", v => {
+    patch.synth.fm.harmonic1.noteOffset = Number(v);
+    return (v > 0 ? "+" : "") + v + " ST";
+  });
+
+  // Harmonic 2
+  UI.bindSlider("harmonic2Gain", "harmonic2GainValue", v => {
+    patch.synth.fm.harmonic2.gain = Number(v);
+    return Math.round(v) + "%";
+  });
+
+  UI.bindSlider("harmonic2Offset", "harmonic2OffsetValue", v => {
+    patch.synth.fm.harmonic2.noteOffset = Number(v);
+    return (v > 0 ? "+" : "") + v + " ST";
+  });
+};
+
+// ============================================================
 //  ENVELOPE UI (AHDHD) WITH PERSONALITY
 // ============================================================
 
@@ -227,25 +286,87 @@ window.initEnvelopeUI = function () {
 
   function applyPreset(name) {
     const map = {
-      blip: { attack1: 0.005, hold1: 0, decay1: 0.15, decay1Target: 0, hold2: 0, decay2: 0 },
-      piano: { attack1: 0.04, hold1: 0, decay1: 0.8, decay1Target: 0.1, hold2: 1.5, decay2: 0.9 },
-      pad: { attack1: 0.2, hold1: 0.1, decay1: 1.5, decay1Target: 0.7, hold2: 0.5, decay2: 2 },
-      drone: { attack1: 1, hold1: 2, decay1: 4, decay1Target: 1, hold2: 4, decay2: 4 },
+      // PERCUSSIVE
+      blip: { 
+        attack1: 0.002, hold1: 0, decay1: 0.08, decay1Target: 0, hold2: 0, decay2: 0,
+        description: "Ultra-short percussive click"
+      },
+      tick: { 
+        attack1: 0.001, hold1: 0.005, decay1: 0.05, decay1Target: 0.02, hold2: 0, decay2: 0.15,
+        description: "Clock tick, rim shot"
+      },
+      pluck: { 
+        attack1: 0.005, hold1: 0, decay1: 0.15, decay1Target: 0.05, hold2: 0.3, decay2: 0.4,
+        description: "Guitar/bass pluck"
+      },
+      
+      // PIANO & KEYS
+      piano: { 
+        attack1: 0.003, hold1: 0, decay1: 0.12, decay1Target: 0.35, hold2: 0.8, decay2: 1.8,
+        description: "Acoustic piano"
+      },
+      epiano: { 
+        attack1: 0.008, hold1: 0.02, decay1: 0.25, decay1Target: 0.4, hold2: 1.2, decay2: 2.0,
+        description: "Electric piano tine"
+      },
+      bell: { 
+        attack1: 0.002, hold1: 0.01, decay1: 0.3, decay1Target: 0.6, hold2: 1.5, decay2: 3.5,
+        description: "Bell, chime, glockenspiel"
+      },
+      
+      // PADS & STRINGS
+      pad: { 
+        attack1: 0.15, hold1: 0.1, decay1: 0.8, decay1Target: 0.75, hold2: 1.5, decay2: 2.5,
+        description: "Soft synth pad"
+      },
+      string: { 
+        attack1: 0.08, hold1: 0.05, decay1: 0.3, decay1Target: 0.85, hold2: 2.0, decay2: 2.0,
+        description: "String section"
+      },
+      choir: { 
+        attack1: 0.25, hold1: 0.15, decay1: 0.5, decay1Target: 0.8, hold2: 1.8, decay2: 2.8,
+        description: "Vocal ensemble"
+      },
+      
+      // BRASS & WINDS
+      brass: { 
+        attack1: 0.12, hold1: 0.08, decay1: 0.2, decay1Target: 0.9, hold2: 1.5, decay2: 1.2,
+        description: "Brass section"
+      },
+      
+      // ATMOSPHERIC
+      drone: { 
+        attack1: 1.2, hold1: 2.5, decay1: 1.5, decay1Target: 0.95, hold2: 4.0, decay2: 5.0,
+        description: "Ambient drone"
+      },
+      wash: { 
+        attack1: 2.0, hold1: 3.0, decay1: 2.5, decay1Target: 0.9, hold2: 5.0, decay2: 6.0,
+        description: "Atmospheric wash"
+      },
     };
 
     const preset = map[name];
     if (!preset) return;
 
-    Object.assign(env, preset);
+    // Apply envelope timing
+    const timingKeys = ['attack1', 'hold1', 'decay1', 'decay1Target', 'hold2', 'decay2'];
+    timingKeys.forEach(key => {
+      if (preset[key] !== undefined) {
+        env[key] = preset[key];
+      }
+    });
 
+    // Update UI displays
     for (const key in preset) {
       const input = document.getElementById(key);
       const span = document.getElementById(key + "Value");
-      if (input) input.value = preset[key];
+      if (input && timingKeys.includes(key)) {
+        input.value = preset[key];
+      }
       if (span) {
         if (key === "decay1Target") {
           span.textContent = Math.round(preset[key] * 100) + "%";
-        } else {
+        } else if (timingKeys.includes(key)) {
           span.textContent = formatSeconds(preset[key] * env.envMult);
         }
       }
@@ -275,14 +396,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof FMEngine !== 'undefined') FMEngine.register(patch);
     if (typeof AmpEnvelopeEngine !== 'undefined') AmpEnvelopeEngine.register(patch);
+    if (typeof FilterEngine !== 'undefined') FilterEngine.register(patch);
     if (typeof EffectsEngine !== 'undefined') EffectsEngine.register(patch);
 
     initAccordionUI();
     initEngineSelectorUI();
     initCarrierUI();
+    initTempoUI();
+    initCarrierVolumeUI();
+    initHarmonicsUI();
     initEnvelopeUI();
 
     if (typeof FMEngine !== 'undefined') FMEngine.initUI(patch);
+    if (typeof FilterEngine !== 'undefined') FilterEngine.initUI(patch);
+    if (typeof EffectsEngine !== 'undefined') EffectsEngine.initUI(patch);
     if (typeof RenderEngine !== 'undefined') {
       RenderEngine.initRenderUI(patch);
       RenderEngine.initPlaybackUI(patch);
