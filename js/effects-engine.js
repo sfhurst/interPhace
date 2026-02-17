@@ -156,6 +156,14 @@ EffectsEngine.register = function (patch) {
   patch.fx.detune = { preset: 0 };
   patch.fx.chorus = { preset: 0 };
   patch.fx.reverb = { preset: 0 };
+  patch.fx.wetDryMix = 80; // 0-100% (default 80% wet)
+  patch.fx.compressor = {
+    enabled: true,
+    threshold: -18,
+    ratio: 3,
+    attack: 0.01,
+    release: 0.1
+  };
   
   patch.tempo = 70; // BPM
 };
@@ -214,6 +222,28 @@ EffectsEngine.initUI = function (patch) {
     ];
     return names[v] || "Custom";
   });
+
+  // Wet/Dry Mix
+  UI.bindSlider("wetDryMix", "wetDryMixValue", v => {
+    patch.fx.wetDryMix = Number(v);
+    return Math.round(v) + "%";
+  });
+
+  // Compressor toggle (button-based)
+  const compressorRow = document.getElementById("compressorRow");
+  if (compressorRow) {
+    compressorRow.addEventListener("click", e => {
+      const btn = e.target.closest("button");
+      if (!btn || !btn.hasAttribute("data-compressor")) return;
+
+      const isOn = btn.dataset.compressor === "on";
+      patch.fx.compressor.enabled = isOn;
+
+      compressorRow.querySelectorAll(".ratio-btn").forEach(b => 
+        b.classList.toggle("active", b === btn)
+      );
+    });
+  }
 };
 
 // ------------------------------------------------------------
@@ -243,6 +273,11 @@ function tempoToDelayTime(tempo, division) {
 // ------------------------------------------------------------
 
 EffectsEngine.applyAll = function (ctx, inputNode, fxParams, noteLength) {
+  // Store dry signal for wet/dry mixing later
+  const drySignal = ctx.createGain();
+  drySignal.gain.value = 1.0;
+  inputNode.connect(drySignal);
+
   let currentNode = inputNode;
 
   // Route 0: STEREO WIDTH (mono to stereo conversion + width)
@@ -258,7 +293,7 @@ EffectsEngine.applyAll = function (ctx, inputNode, fxParams, noteLength) {
     currentNode = applyChorusEffect(ctx, currentNode, fxParams.chorus.preset);
   }
 
-  // Route 3: DELAY (rhythmic space) - NOW WITH LOWPASS
+  // Route 3: DELAY (rhythmic space)
   if (fxParams.delay && fxParams.delay.preset > 0) {
     currentNode = applyDelayEffect(ctx, currentNode, fxParams.delay.preset, window.patch.tempo);
   }
@@ -268,7 +303,64 @@ EffectsEngine.applyAll = function (ctx, inputNode, fxParams, noteLength) {
     currentNode = applyReverbEffect(ctx, currentNode, fxParams.reverb.preset);
   }
 
-  return { node: currentNode };
+  // WET signal is now currentNode (fully processed)
+  const wetSignal = currentNode;
+
+  // ============================================================
+  // WET/DRY MIX
+  // ============================================================
+  
+  const wetPercent = (fxParams.wetDryMix || 80) / 100;
+  const dryPercent = 1 - wetPercent;
+
+  // Convert dry mono to stereo to match wet signal
+  const drySplitter = ctx.createGain();
+  const dryMerger = ctx.createChannelMerger(2);
+  drySignal.connect(drySplitter);
+  drySplitter.connect(dryMerger, 0, 0); // L
+  drySplitter.connect(dryMerger, 0, 1); // R
+
+  // Wet gain
+  const wetGain = ctx.createGain();
+  wetGain.gain.value = wetPercent;
+  wetSignal.connect(wetGain);
+
+  // Dry gain
+  const dryGain = ctx.createGain();
+  dryGain.gain.value = dryPercent;
+  dryMerger.connect(dryGain);
+
+  // Mix wet + dry
+  const mixer = ctx.createGain();
+  wetGain.connect(mixer);
+  dryGain.connect(mixer);
+
+  // ============================================================
+  // COMPRESSOR (Glue)
+  // ============================================================
+  
+  let finalNode = mixer;
+
+  if (fxParams.compressor && fxParams.compressor.enabled) {
+    const compressor = ctx.createDynamicsCompressor();
+    compressor.threshold.value = fxParams.compressor.threshold; // -18dB
+    compressor.knee.value = 12; // Soft knee for smooth compression
+    compressor.ratio.value = fxParams.compressor.ratio; // 3:1
+    compressor.attack.value = fxParams.compressor.attack; // 10ms
+    compressor.release.value = fxParams.compressor.release; // 100ms
+
+    mixer.connect(compressor);
+    
+    // Auto makeup gain (compensate for compression)
+    const makeupGain = ctx.createGain();
+    const gainCompensation = 1 + (fxParams.compressor.threshold / -60) * 0.5; // Rough approximation
+    makeupGain.gain.value = gainCompensation;
+    
+    compressor.connect(makeupGain);
+    finalNode = makeupGain;
+  }
+
+  return { node: finalNode };
 };
 
 // ------------------------------------------------------------

@@ -137,7 +137,7 @@ RenderEngine.startFromPatch = function (patch) {
   const noteLength = AmpEnvelopeEngine.computeLength(patch.envelope.ahdhd);
 
   // --------------------------------------------------------
-  // 2) SYNTH ENGINE (mono output)
+  // 2) SYNTH ENGINE (MONO output)
   // --------------------------------------------------------
 
   let synthNode = null;
@@ -147,7 +147,7 @@ RenderEngine.startFromPatch = function (patch) {
     default: {
       const fmParams = patch.synth.fm;
       const fmOut = FMEngine.build(ctx, baseFreq, fmParams, noteLength);
-      synthNode = fmOut.node;
+      synthNode = fmOut.node; // MONO
       break;
     }
   }
@@ -180,10 +180,10 @@ RenderEngine.startFromPatch = function (patch) {
   }
 
   // --------------------------------------------------------
-  // 5) EFFECTS ENGINE (mono input → STEREO output)
+  // 5) EFFECTS ENGINE (MONO input → STEREO output)
   // --------------------------------------------------------
-  // The effects engine now:
-  // - Converts mono to stereo first
+  // The effects engine:
+  // - Converts mono to stereo via stereo width effect
   // - Routes through all effects in stereo
   // - Returns stereo output
 
@@ -208,7 +208,7 @@ RenderEngine.startFromPatch = function (patch) {
   // --------------------------------------------------------
 
   const outGain = ctx.createGain();
-  outGain.gain.value = 0.6;
+  outGain.gain.value = 0.9; // Boosted from 0.6 for louder output
 
   limiter.connect(outGain).connect(ctx.destination);
 

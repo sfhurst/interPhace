@@ -50,6 +50,16 @@
             </div>
           </div>
 
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Preset</label>
+              <span class="control-value" id="presetValue">Init</span>
+            </div>
+            <div class="control-body">
+              <input id="preset" type="range" min="0" max="10" step="1" value="0" />
+            </div>
+          </div>
+
           <div class="divider"></div>
 
           <div class="mod-block">
@@ -530,6 +540,30 @@
             </div>
             <div class="control-body">
               <input id="reverbPreset" type="range" min="0" max="15" step="1" value="0" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- WET/DRY MIX -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Wet/Dry Mix</label>
+              <span class="control-value" id="wetDryMixValue">80%</span>
+            </div>
+            <div class="control-body">
+              <input id="wetDryMix" type="range" min="0" max="100" step="1" value="80" />
+            </div>
+          </div>
+
+          <!-- COMPRESSOR -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Compressor</label>
+            </div>
+            <div class="ratio-row" id="compressorRow">
+              <button class="ratio-btn active" data-compressor="on">On</button>
+              <button class="ratio-btn" data-compressor="off">Off</button>
             </div>
           </div>
         </div>

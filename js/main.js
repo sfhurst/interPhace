@@ -150,6 +150,326 @@ window.initTempoUI = function () {
 };
 
 // ============================================================
+//  PRESET SYSTEM
+// ============================================================
+
+const PRESET_LIBRARY = [
+  {
+    name: "Init",
+    description: "Clean slate - no modulation or effects",
+    data: {
+      // FM
+      mod1Gain: 0,
+      mod1Ratio: 1,
+      mod1Wave: "sine",
+      mod2Gain: 0,
+      mod2Ratio: 2,
+      mod2Wave: "sine",
+      fmDepthPreset: 0,
+      harmonic1Gain: 0,
+      harmonic1Offset: 0,
+      harmonic2Gain: 0,
+      harmonic2Offset: 0,
+      // Envelope
+      envelope: "piano",
+      // Effects
+      stereoWidth: 0,
+      detune: 0,
+      chorus: 0,
+      delay: 0,
+      reverb: 0,
+      wetDryMix: 80,
+      compressor: true,
+    }
+  },
+  {
+    name: "Classic Bell",
+    description: "DX7-style bell with √2 ratio",
+    data: {
+      mod1Gain: 65,
+      mod1Ratio: 1.414,
+      mod1Wave: "sine",
+      mod2Gain: 0,
+      mod2Ratio: 2,
+      mod2Wave: "sine",
+      fmDepthPreset: 8,
+      harmonic1Gain: 0,
+      harmonic1Offset: 0,
+      harmonic2Gain: 0,
+      harmonic2Offset: 0,
+      envelope: "bell",
+      stereoWidth: 3,
+      detune: 2,
+      chorus: 0,
+      delay: 0,
+      reverb: 6,
+      wetDryMix: 75,
+      compressor: true,
+    }
+  },
+  {
+    name: "Lofi Piano",
+    description: "Warm piano with sub-bass",
+    data: {
+      mod1Gain: 35,
+      mod1Ratio: 1,
+      mod1Wave: "sine",
+      mod2Gain: 15,
+      mod2Ratio: 2,
+      mod2Wave: "sine",
+      fmDepthPreset: 3,
+      harmonic1Gain: 40,
+      harmonic1Offset: -12,
+      harmonic2Gain: 0,
+      harmonic2Offset: 0,
+      envelope: "piano",
+      stereoWidth: 2,
+      detune: 3,
+      chorus: 2,
+      delay: 1,
+      reverb: 3,
+      wetDryMix: 70,
+      compressor: true,
+    }
+  },
+  {
+    name: "Ambient Pad",
+    description: "Lush pad with octave harmonics",
+    data: {
+      mod1Gain: 45,
+      mod1Ratio: 1.5,
+      mod1Wave: "sine",
+      mod2Gain: 25,
+      mod2Ratio: 2.5,
+      mod2Wave: "sine",
+      fmDepthPreset: 16,
+      harmonic1Gain: 30,
+      harmonic1Offset: 12,
+      harmonic2Gain: 20,
+      harmonic2Offset: 24,
+      envelope: "pad",
+      stereoWidth: 8,
+      detune: 5,
+      chorus: 8,
+      delay: 6,
+      reverb: 11,
+      wetDryMix: 85,
+      compressor: true,
+    }
+  },
+  {
+    name: "E.Piano Tine",
+    description: "Rhodes-style electric piano",
+    data: {
+      mod1Gain: 55,
+      mod1Ratio: 1,
+      mod1Wave: "sine",
+      mod2Gain: 20,
+      mod2Ratio: 2,
+      mod2Wave: "sine",
+      fmDepthPreset: 4,
+      harmonic1Gain: 0,
+      harmonic1Offset: 0,
+      harmonic2Gain: 0,
+      harmonic2Offset: 0,
+      envelope: "epiano",
+      stereoWidth: 4,
+      detune: 3,
+      chorus: 4,
+      delay: 2,
+      reverb: 4,
+      wetDryMix: 65,
+      compressor: true,
+    }
+  },
+  {
+    name: "Power Chord",
+    description: "Root + fifth + octave",
+    data: {
+      mod1Gain: 40,
+      mod1Ratio: 2,
+      mod1Wave: "square",
+      mod2Gain: 0,
+      mod2Ratio: 2,
+      mod2Wave: "sine",
+      fmDepthPreset: 5,
+      harmonic1Gain: 70,
+      harmonic1Offset: 7,
+      harmonic2Gain: 50,
+      harmonic2Offset: 12,
+      envelope: "pluck",
+      stereoWidth: 6,
+      detune: 4,
+      chorus: 0,
+      delay: 3,
+      reverb: 5,
+      wetDryMix: 60,
+      compressor: true,
+    }
+  },
+  // Slots 6-10 for user to fill
+  { name: "Empty 6", description: "User preset slot", data: null },
+  { name: "Empty 7", description: "User preset slot", data: null },
+  { name: "Empty 8", description: "User preset slot", data: null },
+  { name: "Empty 9", description: "User preset slot", data: null },
+  { name: "Empty 10", description: "User preset slot", data: null },
+];
+
+function applyPreset(presetIndex) {
+  const preset = PRESET_LIBRARY[presetIndex];
+  if (!preset || !preset.data) return;
+
+  const data = preset.data;
+
+  // Apply FM settings
+  if (data.mod1Gain !== undefined) {
+    patch.synth.fm.modulators[0].gain = data.mod1Gain;
+    const slider = document.getElementById("mod1Gain");
+    if (slider) slider.value = data.mod1Gain;
+    document.getElementById("mod1GainValue").textContent = data.mod1Gain + "%";
+  }
+
+  if (data.mod1Ratio !== undefined) {
+    patch.synth.fm.modulators[0].ratio = data.mod1Ratio;
+    document.querySelectorAll('.ratio-row[data-mod="1"] .ratio-btn').forEach(btn => {
+      btn.classList.toggle("active", Number(btn.dataset.ratio) === data.mod1Ratio);
+    });
+  }
+
+  if (data.mod1Wave !== undefined) {
+    patch.synth.fm.modulators[0].wave = data.mod1Wave;
+    document.querySelectorAll('.wave-row[data-mod="1"] .ratio-btn').forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.wave === data.mod1Wave);
+    });
+  }
+
+  if (data.mod2Gain !== undefined) {
+    patch.synth.fm.modulators[1].gain = data.mod2Gain;
+    const slider = document.getElementById("mod2Gain");
+    if (slider) slider.value = data.mod2Gain;
+    document.getElementById("mod2GainValue").textContent = data.mod2Gain + "%";
+  }
+
+  if (data.mod2Ratio !== undefined) {
+    patch.synth.fm.modulators[1].ratio = data.mod2Ratio;
+    document.querySelectorAll('.ratio-row[data-mod="2"] .ratio-btn').forEach(btn => {
+      btn.classList.toggle("active", Number(btn.dataset.ratio) === data.mod2Ratio);
+    });
+  }
+
+  if (data.mod2Wave !== undefined) {
+    patch.synth.fm.modulators[1].wave = data.mod2Wave;
+    document.querySelectorAll('.wave-row[data-mod="2"] .ratio-btn').forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.wave === data.mod2Wave);
+    });
+  }
+
+  if (data.fmDepthPreset !== undefined) {
+    patch.synth.fm.fmDepthPreset = data.fmDepthPreset;
+    const slider = document.getElementById("fmDepthPreset");
+    if (slider) slider.value = data.fmDepthPreset;
+  }
+
+  // Apply harmonics
+  if (data.harmonic1Gain !== undefined) {
+    patch.synth.fm.harmonic1.gain = data.harmonic1Gain;
+    const slider = document.getElementById("harmonic1Gain");
+    if (slider) slider.value = data.harmonic1Gain;
+    document.getElementById("harmonic1GainValue").textContent = data.harmonic1Gain + "%";
+  }
+
+  if (data.harmonic1Offset !== undefined) {
+    patch.synth.fm.harmonic1.noteOffset = data.harmonic1Offset;
+    const slider = document.getElementById("harmonic1Offset");
+    if (slider) slider.value = data.harmonic1Offset;
+    document.getElementById("harmonic1OffsetValue").textContent = 
+      (data.harmonic1Offset > 0 ? "+" : "") + data.harmonic1Offset + " ST";
+  }
+
+  if (data.harmonic2Gain !== undefined) {
+    patch.synth.fm.harmonic2.gain = data.harmonic2Gain;
+    const slider = document.getElementById("harmonic2Gain");
+    if (slider) slider.value = data.harmonic2Gain;
+    document.getElementById("harmonic2GainValue").textContent = data.harmonic2Gain + "%";
+  }
+
+  if (data.harmonic2Offset !== undefined) {
+    patch.synth.fm.harmonic2.noteOffset = data.harmonic2Offset;
+    const slider = document.getElementById("harmonic2Offset");
+    if (slider) slider.value = data.harmonic2Offset;
+    document.getElementById("harmonic2OffsetValue").textContent = 
+      (data.harmonic2Offset > 0 ? "+" : "") + data.harmonic2Offset + " ST";
+  }
+
+  // Apply envelope
+  if (data.envelope) {
+    const envBtn = document.querySelector(`.preset-btn[data-env="${data.envelope}"]`);
+    if (envBtn) envBtn.click();
+  }
+
+  // Apply effects
+  if (data.stereoWidth !== undefined) {
+    patch.fx.stereoWidth.preset = data.stereoWidth;
+    const slider = document.getElementById("stereoWidthPreset");
+    if (slider) slider.value = data.stereoWidth;
+  }
+
+  if (data.detune !== undefined) {
+    patch.fx.detune.preset = data.detune;
+    const slider = document.getElementById("detunePreset");
+    if (slider) slider.value = data.detune;
+  }
+
+  if (data.chorus !== undefined) {
+    patch.fx.chorus.preset = data.chorus;
+    const slider = document.getElementById("chorusPreset");
+    if (slider) slider.value = data.chorus;
+  }
+
+  if (data.delay !== undefined) {
+    patch.fx.delay.preset = data.delay;
+    const slider = document.getElementById("delayPreset");
+    if (slider) slider.value = data.delay;
+  }
+
+  if (data.reverb !== undefined) {
+    patch.fx.reverb.preset = data.reverb;
+    const slider = document.getElementById("reverbPreset");
+    if (slider) slider.value = data.reverb;
+  }
+
+  if (data.wetDryMix !== undefined) {
+    patch.fx.wetDryMix = data.wetDryMix;
+    const slider = document.getElementById("wetDryMix");
+    if (slider) slider.value = data.wetDryMix;
+    document.getElementById("wetDryMixValue").textContent = data.wetDryMix + "%";
+  }
+
+  if (data.compressor !== undefined) {
+    patch.fx.compressor.enabled = data.compressor;
+    document.querySelectorAll('#compressorRow .ratio-btn').forEach(btn => {
+      const isOn = btn.dataset.compressor === "on";
+      btn.classList.toggle("active", isOn === data.compressor);
+    });
+  }
+
+  console.log(`✅ Loaded preset: ${preset.name}`);
+}
+
+window.initPresetUI = function () {
+  UI.bindSlider("preset", "presetValue", v => {
+    const presetIndex = Number(v);
+    const preset = PRESET_LIBRARY[presetIndex];
+    
+    if (preset && preset.data) {
+      applyPreset(presetIndex);
+    }
+    
+    return preset ? preset.name : "Empty";
+  });
+};
+
+// ============================================================
 //  CARRIER VOLUME UI
 // ============================================================
 
@@ -405,6 +725,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initTempoUI();
     initCarrierVolumeUI();
     initHarmonicsUI();
+    initPresetUI();
     initEnvelopeUI();
 
     if (typeof FMEngine !== 'undefined') FMEngine.initUI(patch);
