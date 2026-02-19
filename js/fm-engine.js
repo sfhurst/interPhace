@@ -221,8 +221,19 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
 
   // Apply preset-based FM depth envelope
   const preset = FM_DEPTH_PRESETS[fmParams.fmDepthPreset];
+  
+  // Apply frequency scaling to FM depth if provided (for rendered notes)
+  const fmDepthScale = fmParams.fmDepthPresetScale || 1.0;
 
-  applyFMDepthEnvelope(mod1Gain.gain, mod1Deviation, t0, preset.attack, preset.decay, preset.index, mod1Freq);
+  applyFMDepthEnvelope(
+    mod1Gain.gain, 
+    mod1Deviation, 
+    t0, 
+    preset.attack, 
+    preset.decay, 
+    preset.index * fmDepthScale, // Scale the FM depth index
+    mod1Freq
+  );
 
   mod1.connect(mod1Gain);
 
@@ -320,5 +331,8 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
     outputNode = mixer;
   }
 
-  return { node: outputNode }; // Return MONO node
+  return { 
+    node: outputNode,  // Return MONO node
+    carrier: carrier   // Return carrier for personality pitch modulation
+  };
 };

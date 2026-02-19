@@ -56,7 +56,7 @@
               <span class="control-value" id="presetValue">Init</span>
             </div>
             <div class="control-body">
-              <input id="preset" type="range" min="0" max="39" step="1" value="0" />
+              <input id="preset" type="range" min="0" max="10" step="1" value="0" />
             </div>
           </div>
 
@@ -104,18 +104,6 @@
               </div>
               <div class="control-body">
                 <input id="harmonic2Offset" type="range" min="-36" max="36" step="1" value="0" />
-              </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <div class="control">
-              <div class="control-top">
-                <label class="control-label">Chord Preset</label>
-                <span class="control-value" id="chordPresetValue">Mono Stack</span>
-              </div>
-              <div class="control-body">
-                <input id="chordPreset" type="range" min="0" max="100" step="1" value="0" />
               </div>
             </div>
           </div>
@@ -193,16 +181,6 @@
             </div>
             <div class="control-body">
               <input id="envMult" type="range" min="0.25" max="10" step="0.25" value="1.00" />
-            </div>
-          </div>
-
-          <div class="control">
-            <div class="control-top">
-              <label class="control-label">Personality</label>
-              <span class="control-value" id="envelopePersonalityValue">Clean</span>
-            </div>
-            <div class="control-body">
-              <input id="envelopePersonality" type="range" min="0" max="9" step="1" value="0" />
             </div>
           </div>
 
@@ -626,7 +604,6 @@
     </main>
 
     <!-- JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="js/main.js"></script>
     <script src="js/carrier-engine.js"></script>
     <script src="js/fm-engine.js"></script>
