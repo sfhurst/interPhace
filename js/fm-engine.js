@@ -214,7 +214,14 @@ FMEngine.build = function (ctx, baseFreq, fmParams, noteLength) {
   mod1.type = normalizeWave(fmParams.modulators[0].wave);
   mod1.frequency.setValueAtTime(mod1Freq, t0);
 
-  const mod1Deviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain) * keyScale;
+  // Compute base deviation from slider value (always 0-100, safe for table lookup)
+  const baseDeviation = computeDeviation(mod1Freq, fmParams.modulators[0].gain);
+  
+  // Apply frequency scaling AFTER table lookup (for rendered notes)
+  const deviationScale = fmParams.modulators[0].deviationScale || 1.0;
+  
+  // Final deviation with key scaling and frequency scaling
+  const mod1Deviation = baseDeviation * deviationScale * keyScale;
 
   const mod1Gain = ctx.createGain();
   mod1Gain.gain.setValueAtTime(mod1Deviation, t0);

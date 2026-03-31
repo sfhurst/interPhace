@@ -663,8 +663,8 @@ function applyReverbEffect(ctx, stereoInput, presetIndex) {
   const preset = REVERB_PRESETS[presetIndex];
   if (!preset || preset.size === 0) return stereoInput;
 
-  // Generate impulse for this preset (cached)
-  const cacheKey = `reverb_${presetIndex}`;
+  // Generate impulse for this preset + sample rate (cached)
+  const cacheKey = `reverb_${presetIndex}_${ctx.sampleRate}`;
   if (!cachedReverbImpulses[cacheKey]) {
     cachedReverbImpulses[cacheKey] = generateReverbImpulse(ctx, preset);
   }
