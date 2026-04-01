@@ -251,7 +251,6 @@ const PRESET_LIBRARY = [
     description: "Clean slate - no modulation or effects",
     data: {
       midiNote: 60,
-      midiName: "C4",
       carrierVolume: 100,
       mod1Gain: 0,
       mod1Ratio: 1,
@@ -279,6 +278,8 @@ const PRESET_LIBRARY = [
     name: "Pure Sine",
     description: "Minimalist sine wave - perfect foundation",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 0,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -290,14 +291,14 @@ const PRESET_LIBRARY = [
       harmonic1Offset: 0,
       harmonic2Gain: 0,
       harmonic2Offset: 0,
-      envelope: "pluck",
+      envelope: "tone",
       personality: 0, // Clean
       stereoWidth: 0,
       detune: 0,
       chorus: 0,
       delay: 0,
-      reverb: 2,
-      wetDryMix: 50,
+      reverb: 0,
+      wetDryMix: 80,
       compressor: true,
     },
   },
@@ -305,6 +306,8 @@ const PRESET_LIBRARY = [
     name: "Soft Touch",
     description: "Gentle FM with subtle character",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 25,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -331,6 +334,8 @@ const PRESET_LIBRARY = [
     name: "Bright Start",
     description: "Clean and present - good for melody",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 40,
       mod1Ratio: 2,
       mod1Wave: "sine",
@@ -357,6 +362,8 @@ const PRESET_LIBRARY = [
     name: "Sub Foundation",
     description: "Pure tone with strong sub-bass",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 20,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -387,6 +394,8 @@ const PRESET_LIBRARY = [
     name: "Classic Bell",
     description: "DX7-style bell with √2 ratio",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 65,
       mod1Ratio: 1.414,
       mod1Wave: "sine",
@@ -413,6 +422,8 @@ const PRESET_LIBRARY = [
     name: "Glass Chime",
     description: "Crystalline bell with shimmer",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 70,
       mod1Ratio: 1.414,
       mod1Wave: "sine",
@@ -439,6 +450,8 @@ const PRESET_LIBRARY = [
     name: "Temple Bell",
     description: "Deep resonant temple bell",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 60,
       mod1Ratio: 0.75,
       mod1Wave: "sine",
@@ -465,6 +478,8 @@ const PRESET_LIBRARY = [
     name: "Music Box",
     description: "Delicate metallic pluck",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 55,
       mod1Ratio: 4,
       mod1Wave: "sine",
@@ -491,6 +506,8 @@ const PRESET_LIBRARY = [
     name: "Glockenspiel",
     description: "Bright mallet percussion",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 75,
       mod1Ratio: 3,
       mod1Wave: "sine",
@@ -521,6 +538,8 @@ const PRESET_LIBRARY = [
     name: "Lofi Piano",
     description: "Warm piano with sub-bass",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 35,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -547,6 +566,8 @@ const PRESET_LIBRARY = [
     name: "E.Piano Tine",
     description: "Rhodes-style electric piano",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 55,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -573,6 +594,8 @@ const PRESET_LIBRARY = [
     name: "Wurlitzer",
     description: "Bright electric piano with bite",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 65,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -599,6 +622,8 @@ const PRESET_LIBRARY = [
     name: "Honky Tonk",
     description: "Detuned saloon piano",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 40,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -625,6 +650,8 @@ const PRESET_LIBRARY = [
     name: "Vintage Keys",
     description: "Nostalgic FM keys with chorus",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 50,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -655,6 +682,8 @@ const PRESET_LIBRARY = [
     name: "Bass Pluck",
     description: "Tight pluck for basslines",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 45,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -681,6 +710,8 @@ const PRESET_LIBRARY = [
     name: "Harp Pluck",
     description: "Delicate plucked string",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 35,
       mod1Ratio: 2,
       mod1Wave: "sine",
@@ -707,6 +738,8 @@ const PRESET_LIBRARY = [
     name: "Koto",
     description: "Japanese string instrument",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 50,
       mod1Ratio: 1.5,
       mod1Wave: "sine",
@@ -733,6 +766,8 @@ const PRESET_LIBRARY = [
     name: "Power Chord",
     description: "Root + fifth + octave",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 40,
       mod1Ratio: 2,
       mod1Wave: "square",
@@ -759,6 +794,8 @@ const PRESET_LIBRARY = [
     name: "Pizzicato",
     description: "Quick orchestral pluck",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 30,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -789,6 +826,8 @@ const PRESET_LIBRARY = [
     name: "Ambient Pad",
     description: "Lush pad with octave harmonics",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 45,
       mod1Ratio: 1.5,
       mod1Wave: "sine",
@@ -815,6 +854,8 @@ const PRESET_LIBRARY = [
     name: "Dream Pad",
     description: "Ethereal floating texture",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 50,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -841,6 +882,8 @@ const PRESET_LIBRARY = [
     name: "Warm Strings",
     description: "Orchestral string section",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 40,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -867,6 +910,8 @@ const PRESET_LIBRARY = [
     name: "Choir Voices",
     description: "Vocal ensemble texture",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 35,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -893,6 +938,8 @@ const PRESET_LIBRARY = [
     name: "Glass Pad",
     description: "Crystalline ambient wash",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 55,
       mod1Ratio: 1.414,
       mod1Wave: "sine",
@@ -923,6 +970,8 @@ const PRESET_LIBRARY = [
     name: "Brass Section",
     description: "Bold brass ensemble",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 60,
       mod1Ratio: 1,
       mod1Wave: "square",
@@ -949,6 +998,8 @@ const PRESET_LIBRARY = [
     name: "Synth Lead",
     description: "Cutting lead for melodies",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 70,
       mod1Ratio: 2,
       mod1Wave: "square",
@@ -975,6 +1026,8 @@ const PRESET_LIBRARY = [
     name: "Flute",
     description: "Breathy woodwind",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 25,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -1001,6 +1054,8 @@ const PRESET_LIBRARY = [
     name: "Oboe",
     description: "Nasal double-reed",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 65,
       mod1Ratio: 1.5,
       mod1Wave: "sine",
@@ -1027,6 +1082,8 @@ const PRESET_LIBRARY = [
     name: "Detuned Lead",
     description: "Fat supersaw-style lead",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 55,
       mod1Ratio: 1,
       mod1Wave: "saw",
@@ -1057,6 +1114,8 @@ const PRESET_LIBRARY = [
     name: "Sub Bass",
     description: "Deep sub-bass foundation",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 30,
       mod1Ratio: 0.5,
       mod1Wave: "sine",
@@ -1083,6 +1142,8 @@ const PRESET_LIBRARY = [
     name: "Reese Bass",
     description: "Gritty detuned bass",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 60,
       mod1Ratio: 1,
       mod1Wave: "saw",
@@ -1109,6 +1170,8 @@ const PRESET_LIBRARY = [
     name: "FM Bass",
     description: "Punchy FM bass",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 70,
       mod1Ratio: 1,
       mod1Wave: "sine",
@@ -1135,6 +1198,8 @@ const PRESET_LIBRARY = [
     name: "Wobble Bass",
     description: "Modulated bass with movement",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 75,
       mod1Ratio: 1,
       mod1Wave: "square",
@@ -1161,6 +1226,8 @@ const PRESET_LIBRARY = [
     name: "808 Sub",
     description: "Classic 808-style sub kick",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 80,
       mod1Ratio: 0.5,
       mod1Wave: "sine",
@@ -1191,6 +1258,8 @@ const PRESET_LIBRARY = [
     name: "Metallic Drone",
     description: "Industrial metallic texture",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 85,
       mod1Ratio: 7,
       mod1Wave: "square",
@@ -1217,6 +1286,8 @@ const PRESET_LIBRARY = [
     name: "Digital Rain",
     description: "Cascading digital texture",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 70,
       mod1Ratio: 3.5,
       mod1Wave: "sine",
@@ -1243,6 +1314,8 @@ const PRESET_LIBRARY = [
     name: "Space Transmission",
     description: "Otherworldly communication",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 65,
       mod1Ratio: 2.5,
       mod1Wave: "square",
@@ -1269,6 +1342,8 @@ const PRESET_LIBRARY = [
     name: "Glitch Stutter",
     description: "Rhythmic broken texture",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 80,
       mod1Ratio: 4,
       mod1Wave: "square",
@@ -1295,6 +1370,8 @@ const PRESET_LIBRARY = [
     name: "Cosmic Void",
     description: "Infinite space ambient",
     data: {
+      midiNote: 60,
+      carrierVolume: 100,
       mod1Gain: 50,
       mod1Ratio: 1.5,
       mod1Wave: "sine",
@@ -1342,9 +1419,10 @@ function applyPreset(presetIndex) {
   if (data.midiNote !== undefined) {
     patch.midiNote = data.midiNote;
     const slider = document.getElementById("rootNote");
-    if (slider) slider.value = data.midiNote;
-    document.getElementById("rootNoteValue").textContent =
-      data.midiName + " (" + data.midiNote + ")";
+    if (slider) {
+      slider.value = data.midiNote;
+      slider.dispatchEvent(new Event("input"));
+    }
   }
 
   // Apply FM settings
@@ -1407,7 +1485,10 @@ function applyPreset(presetIndex) {
   if (data.fmDepthPreset !== undefined) {
     patch.synth.fm.fmDepthPreset = data.fmDepthPreset;
     const slider = document.getElementById("fmDepthPreset");
-    if (slider) slider.value = data.fmDepthPreset;
+    if (slider) {
+      slider.value = data.fmDepthPreset;
+      slider.dispatchEvent(new Event("input"));
+    }
   }
 
   // Apply harmonics
@@ -1762,7 +1843,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.001,
         hold1: 0.005,
         decay1: 0.05,
-        decay1Target: 0.02,
+        decay1Target: 2,
         hold2: 0,
         decay2: 0.15,
         description: "Clock tick, rim shot",
@@ -1771,7 +1852,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.005,
         hold1: 0,
         decay1: 0.15,
-        decay1Target: 0.05,
+        decay1Target: 5,
         hold2: 0.3,
         decay2: 0.4,
         description: "Guitar/bass pluck",
@@ -1782,7 +1863,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.003,
         hold1: 0,
         decay1: 0.12,
-        decay1Target: 0.35,
+        decay1Target: 35,
         hold2: 0.8,
         decay2: 1.8,
         description: "Acoustic piano",
@@ -1791,7 +1872,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.008,
         hold1: 0.02,
         decay1: 0.25,
-        decay1Target: 0.4,
+        decay1Target: 40,
         hold2: 1.2,
         decay2: 2.0,
         description: "Electric piano tine",
@@ -1800,7 +1881,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.002,
         hold1: 0.01,
         decay1: 0.3,
-        decay1Target: 0.6,
+        decay1Target: 60,
         hold2: 1.5,
         decay2: 3.5,
         description: "Bell, chime, glockenspiel",
@@ -1811,7 +1892,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.15,
         hold1: 0.1,
         decay1: 0.8,
-        decay1Target: 0.75,
+        decay1Target: 75,
         hold2: 1.5,
         decay2: 2.5,
         description: "Soft synth pad",
@@ -1820,7 +1901,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.08,
         hold1: 0.05,
         decay1: 0.3,
-        decay1Target: 0.85,
+        decay1Target: 85,
         hold2: 2.0,
         decay2: 2.0,
         description: "String section",
@@ -1829,7 +1910,7 @@ window.initEnvelopeUI = function () {
         attack1: 0.25,
         hold1: 0.15,
         decay1: 0.5,
-        decay1Target: 0.8,
+        decay1Target: 80,
         hold2: 1.8,
         decay2: 2.8,
         description: "Vocal ensemble",
@@ -1840,10 +1921,21 @@ window.initEnvelopeUI = function () {
         attack1: 0.12,
         hold1: 0.08,
         decay1: 0.2,
-        decay1Target: 0.9,
+        decay1Target: 90,
         hold2: 1.5,
         decay2: 1.2,
         description: "Brass section",
+      },
+
+      // TONES & AMBIENT
+      tone: {
+        attack1: 1.2,
+        hold1: 2.5,
+        decay1: 1.5,
+        decay1Target: 95,
+        hold2: 0.0,
+        decay2: 1.0,
+        description: "Tone",
       },
 
       // ATMOSPHERIC
@@ -1851,7 +1943,7 @@ window.initEnvelopeUI = function () {
         attack1: 1.2,
         hold1: 2.5,
         decay1: 1.5,
-        decay1Target: 0.95,
+        decay1Target: 95,
         hold2: 4.0,
         decay2: 5.0,
         description: "Ambient drone",
@@ -1860,7 +1952,7 @@ window.initEnvelopeUI = function () {
         attack1: 2.0,
         hold1: 3.0,
         decay1: 2.5,
-        decay1Target: 0.9,
+        decay1Target: 90,
         hold2: 5.0,
         decay2: 6.0,
         description: "Atmospheric wash",
@@ -1894,7 +1986,7 @@ window.initEnvelopeUI = function () {
       }
       if (span) {
         if (key === "decay1Target") {
-          span.textContent = Math.round(preset[key] * 100) + "%";
+          span.textContent = Math.round(preset[key]) + "%";
         } else if (timingKeys.includes(key)) {
           span.textContent = formatSeconds(preset[key] * env.envMult);
         }
@@ -2085,7 +2177,7 @@ function loadSession() {
     setSlider("attack1", session.attack1);
     setSlider("hold1", session.hold1);
     setSlider("decay1", session.decay1);
-    setSlider("decay1Target", session.decay1Target * 100); // Convert 0-1 to 0-100
+    setSlider("decay1Target", session.decay1Target); // Convert 0-1 to 0-100
     setSlider("hold2", session.hold2);
     setSlider("decay2", session.decay2);
     setSlider("envMult", session.envMult);
