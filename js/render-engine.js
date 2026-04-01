@@ -51,9 +51,9 @@ function initSampleRateUI(patch) {
 
   const buttons = row.querySelectorAll(".ratio-btn");
 
-  buttons.forEach(btn => {
+  buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
-      buttons.forEach(b => b.classList.remove("active"));
+      buttons.forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
 
       patch.sampleRate = Number(btn.dataset.sr);
@@ -70,7 +70,7 @@ function initSampleRateUI(patch) {
 }
 
 function initRenderDurationUI(patch) {
-  UI.bindSlider("renderDuration", "renderDurationValue", v => {
+  UI.bindSlider("renderDuration", "renderDurationValue", (v) => {
     patch.renderDuration = Number(v);
     return formatSeconds(v);
   });
@@ -120,7 +120,9 @@ async function renderSamplePack(patch) {
     // INVERTED: High notes get LESS modulation, low notes get MORE
     const scaleFactor = Math.pow(rootFreq / noteFreq, k);
 
-    console.log(`Rendering ${currentNote}/${totalNotes}: ${midiToName(midi)} (scale: ${scaleFactor.toFixed(3)})`);
+    console.log(
+      `Rendering ${currentNote}/${totalNotes}: ${midiToName(midi)} (scale: ${scaleFactor.toFixed(3)})`,
+    );
 
     // Create scaled patch for this note
     const scaledPatch = createScaledPatch(patch, midi, scaleFactor);
@@ -174,7 +176,11 @@ async function renderNoteToWav(patch) {
   const noteLength = AmpEnvelopeEngine.computeLength(patch.envelope.ahdhd);
   const duration = Math.min(noteLength + 0.5, patch.renderDuration); // Add 0.5s tail, cap at max duration
 
-  const offlineCtx = new OfflineAudioContext(2, sampleRate * duration, sampleRate);
+  const offlineCtx = new OfflineAudioContext(
+    2,
+    sampleRate * duration,
+    sampleRate,
+  );
 
   const baseFreq = midiToFreq(patch.midiNote);
 
@@ -189,17 +195,32 @@ async function renderNoteToWav(patch) {
 
   // Apply envelope with personality
   const envParams = patch.envelope.ahdhd;
-  const envOut = AmpEnvelopeEngine.apply(offlineCtx, synthNode, envParams, carrierNode, baseFreq);
+  const envOut = AmpEnvelopeEngine.apply(
+    offlineCtx,
+    synthNode,
+    envParams,
+    carrierNode,
+    baseFreq,
+  );
   let processedNode = envOut.node;
 
   // Apply filter
   if (patch.filter) {
-    const filterOut = FilterEngine.apply(offlineCtx, processedNode, patch.filter);
+    const filterOut = FilterEngine.apply(
+      offlineCtx,
+      processedNode,
+      patch.filter,
+    );
     processedNode = filterOut.node;
   }
 
   // Apply effects
-  const fxOut = EffectsEngine.applyAll(offlineCtx, processedNode, patch.fx, noteLength);
+  const fxOut = EffectsEngine.applyAll(
+    offlineCtx,
+    processedNode,
+    patch.fx,
+    noteLength,
+  );
   processedNode = fxOut.node;
 
   // Output gain
@@ -301,7 +322,7 @@ async function createAndDownloadZip(wavFiles, patch) {
       URL.revokeObjectURL(url);
 
       // Small delay between downloads to avoid browser blocking
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     alert(`✅ Downloaded ${wavFiles.length} WAV files!`);
@@ -364,13 +385,13 @@ RenderEngine.initPlaybackUI = function (patch) {
     }
   };
   playBtn.addEventListener("click", togglePlayback);
-  const handleSpace = e => {
+  const handleSpace = (e) => {
     if (e.code !== "Space") return;
     e.preventDefault();
     e.stopPropagation();
     e.stopImmediatePropagation();
     // Only trigger on keydown so it doesn't fire twice
-    if (e.type === "keydown") {
+    if (e.type === "keyup") {
       togglePlayback();
     }
   };
@@ -425,7 +446,13 @@ RenderEngine.startFromPatch = function (patch) {
     case "ahdhd":
     default: {
       const envParams = patch.envelope.ahdhd;
-      const envOut = AmpEnvelopeEngine.apply(ctx, synthNode, envParams, carrierNode, baseFreq);
+      const envOut = AmpEnvelopeEngine.apply(
+        ctx,
+        synthNode,
+        envParams,
+        carrierNode,
+        baseFreq,
+      );
       envNode = envOut.node;
       break;
     }
@@ -481,7 +508,10 @@ RenderEngine.startFromPatch = function (patch) {
 
   const cleanupTimeout = setTimeout(
     () => {
-      if (window.activePlayback && window.activePlayback.timeoutId === cleanupTimeout) {
+      if (
+        window.activePlayback &&
+        window.activePlayback.timeoutId === cleanupTimeout
+      ) {
         window.activePlayback = null;
 
         // Update button UI
