@@ -5,7 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>interPhace – hurst.audio</title>
     <link rel="stylesheet" href="css/style.css" />
-  </head>
+  
+<style>
+    html { scrollbar-gutter: stable; }
+
+  .preset-modified { opacity: 0.42; }
+
+    #render.render-centered {
+      display: block;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+  </style>
+</head>
 
   <body>
     <main class="app">
@@ -26,7 +39,7 @@
               <span class="control-value" id="rootNoteValue">C4 (60)</span>
             </div>
             <div class="control-body">
-              <input id="rootNote" type="range" min="21" max="108" value="60" />
+              <input id="rootNote" type="range" min="21" max="108" value="60" data-range-fill="none" />
             </div>
           </div>
 
@@ -36,7 +49,7 @@
               <span class="control-value" id="tempoValue">70 BPM</span>
             </div>
             <div class="control-body">
-              <input id="tempo" type="range" min="40" max="200" value="70" />
+              <input id="tempo" type="range" min="40" max="200" value="70" data-range-fill="left" />
             </div>
           </div>
 
@@ -52,10 +65,11 @@
                 min="0"
                 max="127"
                 step="1"
-                value="100"
-              />
+                value="100" data-range-fill="left" />
             </div>
           </div>
+
+          <div class="divider"></div>
 
           <div class="control">
             <div class="control-top">
@@ -67,10 +81,9 @@
                 id="preset"
                 type="range"
                 min="0"
-                max="39"
+                max="23"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="none" />
             </div>
           </div>
 
@@ -91,8 +104,7 @@
                   type="range"
                   min="0"
                   max="100"
-                  value="0"
-                />
+                  value="0" data-range-fill="left" />
               </div>
             </div>
 
@@ -110,8 +122,7 @@
                   min="-36"
                   max="36"
                   step="1"
-                  value="0"
-                />
+                  value="0" data-range-fill="center" />
               </div>
             </div>
 
@@ -127,8 +138,7 @@
                   type="range"
                   min="0"
                   max="100"
-                  value="0"
-                />
+                  value="0" data-range-fill="left" />
               </div>
             </div>
 
@@ -146,8 +156,7 @@
                   min="-36"
                   max="36"
                   step="1"
-                  value="0"
-                />
+                  value="0" data-range-fill="center" />
               </div>
             </div>
 
@@ -157,7 +166,7 @@
               <div class="control-top">
                 <label class="control-label">Chord Preset</label>
                 <span class="control-value" id="chordPresetValue"
-                  >Mono Stack</span
+                  >None</span
                 >
               </div>
               <div class="control-body">
@@ -165,19 +174,18 @@
                   id="chordPreset"
                   type="range"
                   min="0"
-                  max="100"
+                  max="46"
                   step="1"
-                  value="0"
-                />
+                  value="0" data-range-fill="none" />
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ENVELOPE (PRIMARY) -->
+      <!-- Envelope -->
       <section class="panel" data-section="envPrimary">
-        <button class="panel-header">Envelope (Primary)</button>
+        <button class="panel-header">Envelope</button>
         <div class="panel-body" id="envPrimarySection">
           <div class="control">
             <div class="control-top">
@@ -191,8 +199,7 @@
                 min="0"
                 max="2"
                 step="0.002"
-                value="0.04"
-              />
+                value="0.04" data-range-fill="left" />
             </div>
           </div>
 
@@ -208,8 +215,7 @@
                 min="0"
                 max="6"
                 step="0.002"
-                value="0.00"
-              />
+                value="0.00" data-range-fill="left" />
             </div>
           </div>
 
@@ -225,8 +231,7 @@
                 min="0"
                 max="2"
                 step="0.002"
-                value="0.80"
-              />
+                value="0.80" data-range-fill="left" />
             </div>
           </div>
 
@@ -241,8 +246,7 @@
                 type="range"
                 min="0"
                 max="100"
-                value="10"
-              />
+                value="10" data-range-fill="left" />
             </div>
           </div>
 
@@ -258,8 +262,7 @@
                 min="0"
                 max="6"
                 step="0.002"
-                value="1.5"
-              />
+                value="1.5" data-range-fill="left" />
             </div>
           </div>
 
@@ -275,8 +278,7 @@
                 min="0"
                 max="2"
                 step="0.002"
-                value="0.9"
-              />
+                value="0.9" data-range-fill="left" />
             </div>
           </div>
 
@@ -292,70 +294,74 @@
                 min="0.25"
                 max="10"
                 step="0.25"
-                value="1.00"
-              />
-            </div>
-          </div>
-
-          <div class="control">
-            <div class="control-top">
-              <label class="control-label">Personality</label>
-              <span class="control-value" id="envelopePersonalityValue"
-                >Clean</span
-              >
-            </div>
-            <div class="control-body">
-              <input
-                id="envelopePersonality"
-                type="range"
-                min="0"
-                max="9"
-                step="1"
-                value="0"
-              />
+                value="1.00" data-range-fill="left" />
             </div>
           </div>
 
           <div class="divider"></div>
 
           <div class="preset-row">
-            <button class="preset-btn" data-env="blip">Blip</button>
             <button class="preset-btn" data-env="tick">Tick</button>
+            <button class="preset-btn" data-env="arp">Arp</button>
             <button class="preset-btn" data-env="pluck">Pluck</button>
-            <button class="preset-btn active" data-env="piano">Piano</button>
-            <button class="preset-btn" data-env="epiano">E.Piano</button>
-            <button class="preset-btn" data-env="bell">Bell</button>
+            <button class="preset-btn active" data-env="strike">Strike</button>
+            <button class="preset-btn" data-env="short">Short</button>
+            <button class="preset-btn" data-env="medium">Medium</button>
+            <button class="preset-btn" data-env="long">Long</button>
             <button class="preset-btn" data-env="pad">Pad</button>
-            <button class="preset-btn" data-env="string">String</button>
-            <button class="preset-btn" data-env="choir">Choir</button>
-            <button class="preset-btn" data-env="brass">Brass</button>
-            <button class="preset-btn" data-env="tone">Tone</button>
             <button class="preset-btn" data-env="drone">Drone</button>
             <button class="preset-btn" data-env="wash">Wash</button>
+          </div>
+
+          <div class="divider"></div>
+          <h3 class="mod-title">Personalities</h3>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Instrument Behavior</label>
+              <span class="control-value" id="instrumentBehaviorValue">None</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="instrumentBehavior"
+                type="range"
+                min="0"
+                max="20"
+                step="1"
+                value="0" data-range-fill="none" />
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Character</label>
+              <span class="control-value" id="envelopeCharacterValue">None</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="envelopeCharacter"
+                type="range"
+                min="0"
+                max="12"
+                step="1"
+                value="0" data-range-fill="none" />
+            </div>
           </div>
         </div>
       </section>
 
       <!-- ENGINE -->
       <section class="panel" data-section="engine">
-        <button class="panel-header">Engine</button>
+        <button class="panel-header">FM Engine</button>
         <div class="panel-body" id="engineSection">
-          <div class="engine-select">
-            <button class="engine-btn active" data-engine="fm">FM Synth</button>
-            <button class="engine-btn" data-engine="sub">Subtractive</button>
-            <button class="engine-btn" data-engine="sampler">Sampler</button>
-          </div>
-
-          <div class="divider"></div>
-
           <div class="engine-panel active" id="engine-fm">
             <!-- MODULATOR 1 -->
             <div class="mod-block">
-              <h3 class="mod-title">Modulator 1</h3>
+              <h3 class="mod-title">Modulator 1 · Character</h3>
 
               <div class="control">
                 <div class="control-top">
-                  <label class="control-label">Gain</label>
+                  <label class="control-label">Amount</label>
                   <span class="control-value" id="mod1GainValue">0%</span>
                 </div>
                 <div class="control-body">
@@ -364,13 +370,12 @@
                     type="range"
                     min="0"
                     max="100"
-                    value="0"
-                  />
+                    value="0" data-range-fill="left" />
                 </div>
               </div>
               <div class="control">
                 <div class="control-top">
-                  <label class="control-label">FM Depth</label>
+                  <label class="control-label">FM Shape</label>
                   <span class="control-value" id="fmDepthPresetValue">0%</span>
                 </div>
                 <div class="control-body">
@@ -379,8 +384,7 @@
                     type="range"
                     min="0"
                     max="20"
-                    value="0"
-                  />
+                    value="0" data-range-fill="none" />
                 </div>
               </div>
 
@@ -406,9 +410,9 @@
                 <span class="control-label">Wave</span>
               </div>
               <div class="wave-row" data-mod="1">
-                <button class="ratio-btn active" data-wave="sine">Sine</button>
-                <button class="ratio-btn" data-wave="square">Square</button>
-                <button class="ratio-btn" data-wave="saw">Saw</button>
+                <button class="ratio-btn wave-btn active" data-wave="sine">Sine</button>
+                <button class="ratio-btn wave-btn" data-wave="square">Square</button>
+                <button class="ratio-btn wave-btn" data-wave="saw">Saw</button>
               </div>
             </div>
 
@@ -416,11 +420,11 @@
 
             <!-- MODULATOR 2 -->
             <div class="mod-block">
-              <h3 class="mod-title">Modulator 2</h3>
+              <h3 class="mod-title">Modulator 2 · Motion</h3>
 
               <div class="control">
                 <div class="control-top">
-                  <label class="control-label">Gain</label>
+                  <label class="control-label">Amount</label>
                   <span class="control-value" id="mod2GainValue">0%</span>
                 </div>
                 <div class="control-body">
@@ -429,8 +433,7 @@
                     type="range"
                     min="0"
                     max="100"
-                    value="0"
-                  />
+                    value="0" data-range-fill="left" />
                 </div>
               </div>
 
@@ -456,20 +459,32 @@
                 <span class="control-label">Wave</span>
               </div>
               <div class="wave-row" data-mod="2">
-                <button class="ratio-btn active" data-wave="sine">Sine</button>
-                <button class="ratio-btn" data-wave="square">Square</button>
-                <button class="ratio-btn" data-wave="saw">Saw</button>
+                <button class="ratio-btn wave-btn active" data-wave="sine">Sine</button>
+                <button class="ratio-btn wave-btn" data-wave="square">Square</button>
+                <button class="ratio-btn wave-btn" data-wave="saw">Saw</button>
               </div>
+
+            <div class="divider"></div>
+
+            <div class="control">
+              <div class="control-top">
+                <label class="control-label">Ratio Preset</label>
+                <span class="control-value" id="fmRatioPresetValue">Pure</span>
+              </div>
+              <div class="control-body">
+                <input
+                  id="fmRatioPreset"
+                  type="range"
+                  min="0"
+                  max="15"
+                  step="1"
+                  value="0"
+                  data-range-fill="none" />
+              </div>
+            </div>
             </div>
           </div>
 
-          <div class="engine-panel" id="engine-sub">
-            <!-- Subtractive engine UI -->
-          </div>
-
-          <div class="engine-panel" id="engine-sampler">
-            <!-- Sampler engine UI -->
-          </div>
         </div>
       </section>
 
@@ -477,27 +492,10 @@
       <section class="panel" data-section="filter">
         <button class="panel-header">Filter</button>
         <div class="panel-body" id="filterSection">
-          <!-- LOWPASS / HIGHPASS -->
+          <!-- FREQUENCY CUT WINDOW -->
           <div class="control">
             <div class="control-top">
-              <label class="control-label">Lowpass Frequency</label>
-              <span class="control-value" id="lpFreqValue">20kHz</span>
-            </div>
-            <div class="control-body">
-              <input
-                id="lpFreq"
-                type="range"
-                min="0"
-                max="25"
-                step="1"
-                value="25"
-              />
-            </div>
-          </div>
-
-          <div class="control">
-            <div class="control-top">
-              <label class="control-label">Highpass Frequency</label>
+              <label class="control-label">Low Cut</label>
               <span class="control-value" id="hpFreqValue">20Hz</span>
             </div>
             <div class="control-body">
@@ -507,8 +505,23 @@
                 min="0"
                 max="25"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="right" />
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">High Cut</label>
+              <span class="control-value" id="lpFreqValue">20kHz</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="lpFreq"
+                type="range"
+                min="0"
+                max="25"
+                step="1"
+                value="25" data-range-fill="left" />
             </div>
           </div>
 
@@ -537,8 +550,7 @@
                   min="0"
                   max="47"
                   step="1"
-                  value="18"
-                />
+                  value="18" data-range-fill="left" />
               </div>
             </div>
 
@@ -554,8 +566,7 @@
                   min="-12"
                   max="12"
                   step="0.5"
-                  value="0"
-                />
+                  value="0" data-range-fill="center" />
               </div>
             </div>
 
@@ -571,15 +582,14 @@
                   min="0.5"
                   max="10"
                   step="0.1"
-                  value="1.0"
-                />
+                  value="1.0" data-range-fill="left" />
               </div>
             </div>
 
             <div class="control">
               <span class="control-label">Frequency Range</span>
             </div>
-            <div class="ratio-row">
+            <div class="ratio-row" id="eq1Range">
               <button class="ratio-btn active" data-range="low">Low</button>
               <button class="ratio-btn" data-range="mid">Mid</button>
               <button class="ratio-btn" data-range="high">High</button>
@@ -601,8 +611,7 @@
                   min="0"
                   max="35"
                   step="1"
-                  value="9"
-                />
+                  value="9" data-range-fill="left" />
               </div>
             </div>
 
@@ -618,8 +627,7 @@
                   min="-12"
                   max="12"
                   step="0.5"
-                  value="0"
-                />
+                  value="0" data-range-fill="center" />
               </div>
             </div>
 
@@ -635,15 +643,14 @@
                   min="0.5"
                   max="10"
                   step="0.1"
-                  value="1.0"
-                />
+                  value="1.0" data-range-fill="left" />
               </div>
             </div>
 
             <div class="control">
               <span class="control-label">Frequency Range</span>
             </div>
-            <div class="ratio-row">
+            <div class="ratio-row" id="eq2Range">
               <button class="ratio-btn" data-range="low">Low</button>
               <button class="ratio-btn active" data-range="mid">Mid</button>
               <button class="ratio-btn" data-range="high">High</button>
@@ -665,8 +672,7 @@
                   min="0"
                   max="31"
                   step="1"
-                  value="12"
-                />
+                  value="12" data-range-fill="left" />
               </div>
             </div>
 
@@ -682,8 +688,7 @@
                   min="-12"
                   max="12"
                   step="0.5"
-                  value="0"
-                />
+                  value="0" data-range-fill="center" />
               </div>
             </div>
 
@@ -699,28 +704,91 @@
                   min="0.5"
                   max="10"
                   step="0.1"
-                  value="1.0"
-                />
+                  value="1.0" data-range-fill="left" />
               </div>
             </div>
 
             <div class="control">
               <span class="control-label">Frequency Range</span>
             </div>
-            <div class="ratio-row">
+            <div class="ratio-row" id="eq3Range">
               <button class="ratio-btn" data-range="low">Low</button>
               <button class="ratio-btn" data-range="mid">Mid</button>
               <button class="ratio-btn active" data-range="high">High</button>
               <button class="ratio-btn" data-range="all">All</button>
             </div>
           </div>
+        
+          <div class="divider"></div>
+
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Filter Preset</label>
+              <span class="control-value" id="filterPresetValue">Flat</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="filterPreset"
+                type="range"
+                min="0"
+                max="11"
+                step="1"
+                value="0"
+                data-range-fill="none" />
+            </div>
+          </div>
+</div>
+      </section>
+
+
+      <!-- TEXTURE -->
+      <section class="panel" data-section="texture">
+        <button class="panel-header">Texture</button>
+        <div class="panel-body" id="textureSection">
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Character</label>
+              <span class="control-value" id="texturePresetValue">Clean</span>
+            </div>
+            <div class="control-body">
+              <input id="texturePreset" type="range" min="0" max="7" step="1" value="0" data-range-fill="none" />
+            </div>
+          </div>
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Amount</label>
+              <span class="control-value" id="textureAmountValue">0%</span>
+            </div>
+            <div class="control-body">
+              <input id="textureAmount" type="range" min="0" max="100" step="1" value="0" data-range-fill="left" />
+            </div>
+          </div>
         </div>
       </section>
+
+
 
       <!-- EFFECTS -->
       <section class="panel" data-section="effects">
         <button class="panel-header">Effects</button>
         <div class="panel-body" id="effectsSection">
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Bit Crush</label>
+              <span class="control-value" id="bitCrushPresetValue">Off</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="bitCrushPreset"
+                type="range"
+                min="0"
+                max="20"
+                step="1"
+                value="0"
+                data-range-fill="left" />
+            </div>
+          </div>
+
           <div class="control">
             <div class="control-top">
               <label class="control-label">Stereo Width</label>
@@ -733,10 +801,9 @@
                 id="stereoWidthPreset"
                 type="range"
                 min="0"
-                max="15"
+                max="25"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="left" />
             </div>
           </div>
 
@@ -750,10 +817,9 @@
                 id="detunePreset"
                 type="range"
                 min="0"
-                max="15"
+                max="24"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="left" />
             </div>
           </div>
 
@@ -767,10 +833,9 @@
                 id="chorusPreset"
                 type="range"
                 min="0"
-                max="15"
+                max="27"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="left" />
             </div>
           </div>
 
@@ -784,10 +849,9 @@
                 id="delayPreset"
                 type="range"
                 min="0"
-                max="15"
+                max="37"
                 step="1"
-                value="0"
-              />
+                value="0" data-range-fill="left" />
             </div>
           </div>
 
@@ -801,10 +865,27 @@
                 id="reverbPreset"
                 type="range"
                 min="0"
-                max="15"
+                max="31"
+                step="1"
+                value="0" data-range-fill="left" />
+            </div>
+          </div>
+
+          <!-- SATURATION -->
+          <div class="control">
+            <div class="control-top">
+              <label class="control-label">Saturation</label>
+              <span class="control-value" id="saturationPresetValue">Off</span>
+            </div>
+            <div class="control-body">
+              <input
+                id="saturationPreset"
+                type="range"
+                min="0"
+                max="29"
                 step="1"
                 value="0"
-              />
+                data-range-fill="left" />
             </div>
           </div>
 
@@ -823,21 +904,11 @@
                 min="0"
                 max="100"
                 step="1"
-                value="80"
-              />
+                value="80" data-range-fill="left" />
             </div>
           </div>
 
-          <!-- COMPRESSOR -->
-          <div class="control">
-            <div class="control-top">
-              <label class="control-label">Compressor</label>
-            </div>
-            <div class="ratio-row" id="compressorRow">
-              <button class="ratio-btn active" data-compressor="on">On</button>
-              <button class="ratio-btn" data-compressor="off">Off</button>
-            </div>
-          </div>
+
         </div>
       </section>
 
@@ -852,17 +923,34 @@
 
             <div class="ratio-row" id="sampleRateRow">
               <button class="ratio-btn" data-sr="44100">44.1k</button>
-              <button class="ratio-btn" data-sr="48000">48k</button>
+              <button class="ratio-btn active" data-sr="48000">48k</button>
               <button class="ratio-btn" data-sr="88200">88.2k</button>
               <button class="ratio-btn" data-sr="96000">96k</button>
-              <button class="ratio-btn" data-sr="176400">176.4k</button>
-              <button class="ratio-btn active" data-sr="192000">192k</button>
+            </div>
+          </div>
+
+
+          <div class="control">
+            <div class="control-top"><label class="control-label">Sample Spacing</label></div>
+            <div class="ratio-row" id="sampleStepRow">
+              <button class="ratio-btn" data-step="1">Chromatic</button>
+              <button class="ratio-btn active" data-step="3">Minor 3rds</button>
+              <button class="ratio-btn" data-step="6">Tritones</button>
+            </div>
+          </div>
+
+          <div class="control">
+            <div class="control-top"><label class="control-label">Keyboard Range</label></div>
+            <div class="ratio-row" id="sampleRangeRow">
+              <button class="ratio-btn active" data-range-semitones="12">2 Octaves</button>
+              <button class="ratio-btn" data-range-semitones="24">4 Octaves</button>
+              <button class="ratio-btn" data-range-semitones="36">6 Octaves</button>
             </div>
           </div>
 
           <div class="control">
             <div class="control-top">
-              <label class="control-label">Duration (s)</label>
+              <label class="control-label">Maximum Duration (s)</label>
               <span class="control-value" id="renderDurationValue">8.0</span>
             </div>
             <div class="control-body">
@@ -872,24 +960,41 @@
                 min="0.1"
                 max="30"
                 step="0.1"
-                value="8.0"
-              />
+                value="8.0" data-range-fill="left" />
             </div>
           </div>
 
-          <button id="render" class="render-btn">Render</button>
+          <button id="render" class="play-btn render-centered">Render</button>
         </div>
       </section>
     </main>
 
     <!-- JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="js/app/state.js"></script>
+    <script src="js/utils/audio-math.js"></script>
+    <script src="js/utils/display.js"></script>
+    <script src="js/app/ui-bindings.js"></script>
+    <script src="js/data/pitch-presets.js"></script>
+    <script src="js/data/chord-presets.js"></script>
+    <script src="js/data/envelope-presets.js"></script>
+    <script src="js/data/personality-authoring.js"></script>
+    <script src="js/data/instrument-behaviors.js"></script>
+    <script src="js/data/character-personalities.js"></script>
+    <script src="js/data/filter-frequencies.js"></script>
+    <script src="js/app/core-controls.js"></script>
+    <script src="js/app/preset-controller.js"></script>
+    <script src="js/app/envelope-controller.js"></script>
+    <script src="js/app/session-manager.js"></script>
+    <script src="js/app/filter-controller.js"></script>
     <script src="js/main.js"></script>
-    <!-- <script src="js/carrier-engine.js"></script> -->
     <script src="js/fm-engine.js"></script>
     <script src="js/carrier-envelope-engine.js"></script>
     <script src="js/filter-engine.js"></script>
     <script src="js/effects-engine.js"></script>
+    <script src="js/texture-engine.js"></script>
+    <script src="js/rack/render-plan.js"></script>
+    <script src="js/rack/graph-builder.js"></script>
     <script src="js/render-engine.js"></script>
   </body>
 </html>

@@ -20,7 +20,7 @@ window.playbackContext = null;
 function getPlaybackContext() {
   try {
     if (!window.playbackContext || window.playbackContext.state === "closed") {
-      window.playbackContext = new AudioContext({ sampleRate: 48000 });
+      window.playbackContext = new AudioContext();
       console.log("✅ Created new AudioContext");
     }
 
@@ -42,6 +42,7 @@ function getPlaybackContext() {
 RenderEngine.initRenderUI = function (patch) {
   initSampleRateUI(patch);
   initRenderDurationUI(patch);
+  initSampleMappingUI(patch);
   initRenderButton(patch);
 };
 
@@ -76,6 +77,24 @@ function initRenderDurationUI(patch) {
   });
 }
 
+
+function initSampleMappingUI(patch) {
+  const bind = (rowId, attr, key, fallback) => {
+    const row = document.getElementById(rowId);
+    if (!row) return;
+    row.addEventListener("click", (event) => {
+      const button = event.target.closest(`button[${attr}]`);
+      if (!button) return;
+      row.querySelectorAll(".ratio-btn").forEach((b) => b.classList.toggle("active", b === button));
+      patch[key] = Number(button.getAttribute(attr)) || fallback;
+    });
+  };
+  patch.sampleStep = Number(patch.sampleStep) || 3;
+  patch.sampleRange = Number(patch.sampleRange) || 12;
+  bind("sampleStepRow", "data-step", "sampleStep", 3);
+  bind("sampleRangeRow", "data-range-semitones", "sampleRange", 12);
+}
+
 function initRenderButton(patch) {
   const renderBtn = document.getElementById("render");
   if (!renderBtn) return;
@@ -99,71 +118,68 @@ function initRenderButton(patch) {
 }
 
 // ------------------------------------------------------------
-//  RENDER SAMPLE PACK (25 notes with frequency scaling)
+//  RENDER SAMPLE PACK (25 chromatic notes)
 // ------------------------------------------------------------
 
 async function renderSamplePack(patch) {
-  const rootMidi = patch.midiNote;
-  const rootFreq = midiToFreq(rootMidi);
-  const k = 0.7; // Frequency scaling curve
+  const rootMidi = Number(patch.midiNote);
+  const range = Math.max(12, Math.min(36, Number(patch.sampleRange) || 12));
+  const step = [1, 3, 6].includes(Number(patch.sampleStep)) ? Number(patch.sampleStep) : 3;
+  const lowMidi = Math.max(0, rootMidi - range);
+  const highMidi = Math.min(127, rootMidi + range);
+  const roots = [];
+
+  for (let midi = lowMidi; midi <= highMidi; midi += step) roots.push(midi);
+  if (!roots.includes(rootMidi)) roots.push(rootMidi);
+  if (!roots.includes(highMidi)) roots.push(highMidi);
+  roots.sort((a, b) => a - b);
 
   const wavFiles = [];
-  const totalNotes = 25;
-  let currentNote = 0;
+  console.log(`🎹 Rendering ${roots.length} root samples...`);
 
-  console.log(`🎹 Rendering ${totalNotes} notes...`);
-
-  for (let midi = rootMidi - 12; midi <= rootMidi + 12; midi++) {
-    currentNote++;
-    const noteFreq = midiToFreq(midi);
-
-    // INVERTED: High notes get LESS modulation, low notes get MORE
-    const scaleFactor = Math.pow(rootFreq / noteFreq, k);
-
-    console.log(
-      `Rendering ${currentNote}/${totalNotes}: ${midiToName(midi)} (scale: ${scaleFactor.toFixed(3)})`,
-    );
-
-    // Create scaled patch for this note
-    const scaledPatch = createScaledPatch(patch, midi, scaleFactor);
-
-    // Render to WAV
-    const wavBuffer = await renderNoteToWav(scaledPatch);
-
+  for (let i = 0; i < roots.length; i++) {
+    const midi = roots[i];
+    console.log(`Rendering ${i + 1}/${roots.length}: ${midiToName(midi)}`);
+    const notePatch = createNotePatch(patch, midi);
+    const wavBuffer = await renderNoteToWav(notePatch);
     wavFiles.push({
-      name: `${midi}_${midiToName(midi)}.wav`,
+      midi,
+      name: `${String(midi).padStart(3, "0")}_${midiToName(midi).replace("#", "s")}.wav`,
       data: wavBuffer,
     });
   }
 
-  console.log("✅ All notes rendered, creating ZIP...");
+  const zones = createKeyZones(roots, lowMidi, highMidi);
+  await createAndDownloadZip(wavFiles, patch, zones);
+}
 
-  // Create and download ZIP
-  await createAndDownloadZip(wavFiles, patch);
+function createKeyZones(roots, lowMidi, highMidi) {
+  return roots.map((root, index) => {
+    const previous = roots[index - 1];
+    const next = roots[index + 1];
+    const low = index === 0 ? lowMidi : Math.floor((previous + root) / 2) + 1;
+    const high = index === roots.length - 1 ? highMidi : Math.floor((root + next) / 2);
+    return { root, rootNote: midiToName(root), low, lowNote: midiToName(low), high, highNote: midiToName(high) };
+  });
 }
 
 // ------------------------------------------------------------
 //  CREATE SCALED PATCH
 // ------------------------------------------------------------
 
-function createScaledPatch(originalPatch, targetMidi, scaleFactor) {
-  // Deep clone the patch
-  const scaled = JSON.parse(JSON.stringify(originalPatch));
+function createNotePatch(originalPatch, targetMidi) {
+  const notePatch = JSON.parse(JSON.stringify(originalPatch));
+  notePatch.midiNote = targetMidi;
 
-  // Change the note
-  scaled.midiNote = targetMidi;
+  // Remove legacy per-note scale fields from saved sessions.
+  if (notePatch.synth?.fm?.modulators?.[0]) {
+    delete notePatch.synth.fm.modulators[0].deviationScale;
+  }
+  if (notePatch.synth?.fm) {
+    delete notePatch.synth.fm.fmDepthPresetScale;
+  }
 
-  // DON'T scale mod1 gain (causes table overflow)
-  // Instead, pass the scaleFactor to be applied to the deviation
-  scaled.synth.fm.modulators[0].deviationScale = scaleFactor;
-
-  // Scale FM depth (affects Mod1)
-  scaled.synth.fm.fmDepthPresetScale = scaleFactor;
-
-  // Mod2 stays unchanged (as requested)
-  // Harmonics stay at same semitone offsets (automatic)
-
-  return scaled;
+  return notePatch;
 }
 
 // ------------------------------------------------------------
@@ -171,71 +187,85 @@ function createScaledPatch(originalPatch, targetMidi, scaleFactor) {
 // ------------------------------------------------------------
 
 async function renderNoteToWav(patch) {
-  // Create offline context at specified sample rate
-  const sampleRate = patch.sampleRate;
-  const noteLength = AmpEnvelopeEngine.computeLength(patch.envelope.ahdhd);
-  const duration = Math.min(noteLength + 0.5, patch.renderDuration); // Add 0.5s tail, cap at max duration
+  const plan = RenderPlan.create(patch);
+  const offlineCtx = new OfflineAudioContext(2, plan.frameCount, plan.sampleRate);
+  const graph = GraphBuilder.build(offlineCtx, patch, plan, { masterMode: "float" });
+  graph.node.connect(offlineCtx.destination);
 
-  const offlineCtx = new OfflineAudioContext(
-    2,
-    sampleRate * duration,
-    sampleRate,
-  );
+  const renderedBuffer = await offlineCtx.startRendering();
+  prepareRenderedBuffer(renderedBuffer);
+  return audioBufferToWav(renderedBuffer);
+}
 
-  const baseFreq = midiToFreq(patch.midiNote);
+function prepareRenderedBuffer(buffer, options = {}) {
+  const targetDb = Number.isFinite(options.targetDb) ? options.targetDb : -1;
+  const targetPeak = Math.pow(10, targetDb / 20);
+  const channels = [];
+  let peakBefore = 0;
+  let clippedSamplesBefore = 0;
+  let dcOffsetMaximum = 0;
 
-  // Build FM synth
-  let synthNode = null;
-  let carrierNode = null;
+  for (let channel = 0; channel < buffer.numberOfChannels; channel++) {
+    const data = buffer.getChannelData(channel);
+    channels.push(data);
 
-  const fmParams = patch.synth.fm;
-  const fmOut = FMEngine.build(offlineCtx, baseFreq, fmParams, noteLength);
-  synthNode = fmOut.node;
-  carrierNode = fmOut.carrier;
+    let mean = 0;
+    for (let i = 0; i < data.length; i++) mean += data[i];
+    mean /= Math.max(1, data.length);
+    dcOffsetMaximum = Math.max(dcOffsetMaximum, Math.abs(mean));
 
-  // Apply envelope with personality
-  const envParams = patch.envelope.ahdhd;
-  const envOut = AmpEnvelopeEngine.apply(
-    offlineCtx,
-    synthNode,
-    envParams,
-    carrierNode,
-    baseFreq,
-  );
-  let processedNode = envOut.node;
-
-  // Apply filter
-  if (patch.filter) {
-    const filterOut = FilterEngine.apply(
-      offlineCtx,
-      processedNode,
-      patch.filter,
-    );
-    processedNode = filterOut.node;
+    for (let i = 0; i < data.length; i++) {
+      data[i] -= mean;
+      const magnitude = Math.abs(data[i]);
+      peakBefore = Math.max(peakBefore, magnitude);
+      if (magnitude > 1) clippedSamplesBefore += 1;
+    }
   }
 
-  // Apply effects
-  const fxOut = EffectsEngine.applyAll(
-    offlineCtx,
-    processedNode,
-    patch.fx,
-    noteLength,
+  // Measure first. Only attenuate when the actual completed render exceeds
+  // the requested output ceiling. Quiet sounds are never boosted.
+  const appliedGain = peakBefore > targetPeak && peakBefore > 0
+    ? targetPeak / peakBefore
+    : 1;
+  const fadeSamples = Math.min(
+    Math.floor(buffer.sampleRate * 0.015),
+    Math.floor(buffer.length / 2),
   );
-  processedNode = fxOut.node;
 
-  // Output gain
-  const outGain = offlineCtx.createGain();
-  outGain.gain.value = 0.9;
-  processedNode.connect(outGain);
-  outGain.connect(offlineCtx.destination);
+  let peakAfter = 0;
+  for (const data of channels) {
+    for (let i = 0; i < data.length; i++) {
+      data[i] *= appliedGain;
+      peakAfter = Math.max(peakAfter, Math.abs(data[i]));
+    }
 
-  // Render
-  const renderedBuffer = await offlineCtx.startRendering();
+    // Tiny ending fade prevents a click only when rendering truncates a tail.
+    for (let i = 0; i < fadeSamples; i++) {
+      const index = data.length - fadeSamples + i;
+      data[index] *= 1 - i / Math.max(1, fadeSamples - 1);
+    }
+  }
 
-  // Convert to WAV
-  const wavBuffer = audioBufferToWav(renderedBuffer);
+  return {
+    peakBefore,
+    peakAfter,
+    clippedSamplesBefore,
+    dcOffsetMaximum,
+    appliedGain,
+    targetPeak,
+  };
+}
 
-  return wavBuffer;
+async function renderPatchToFloatBuffer(patch, sampleRate) {
+  const plan = RenderPlan.create(patch, sampleRate, {
+    fullNaturalDuration: true,
+  });
+  const offlineCtx = new OfflineAudioContext(2, plan.frameCount, plan.sampleRate);
+  const graph = GraphBuilder.build(offlineCtx, patch, plan, { masterMode: "float" });
+  graph.node.connect(offlineCtx.destination);
+  const buffer = await offlineCtx.startRendering();
+  const analysis = prepareRenderedBuffer(buffer, { targetDb: -1 });
+  return { buffer, analysis, plan };
 }
 
 // ------------------------------------------------------------
@@ -252,13 +282,19 @@ function audioBufferToWav(buffer) {
   const blockAlign = numChannels * bytesPerSample;
 
   const data = [];
+  let ditherState = 0x1a2b3c4d;
+  const random = () => {
+    ditherState = (ditherState * 1664525 + 1013904223) >>> 0;
+    return ditherState / 4294967296;
+  };
+
   for (let i = 0; i < buffer.length; i++) {
     for (let channel = 0; channel < numChannels; channel++) {
       const sample = buffer.getChannelData(channel)[i];
-      // Clamp to [-1, 1]
-      const clamped = Math.max(-1, Math.min(1, sample));
-      // Convert to 16-bit PCM
-      const int16 = clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff;
+      // Deterministic triangular dither before 16-bit quantization.
+      const dither = (random() - random()) / 65536;
+      const clamped = Math.max(-1, Math.min(1, sample + dither));
+      const int16 = Math.round(clamped < 0 ? clamped * 0x8000 : clamped * 0x7fff);
       data.push(int16);
     }
   }
@@ -302,7 +338,7 @@ function writeString(view, offset, string) {
 //  CREATE AND DOWNLOAD ZIP
 // ------------------------------------------------------------
 
-async function createAndDownloadZip(wavFiles, patch) {
+async function createAndDownloadZip(wavFiles, patch, zones) {
   // Use JSZip library (we'll need to add this)
   // For now, implement a simple multi-file download
   // Or use a ZIP library
@@ -337,6 +373,33 @@ async function createAndDownloadZip(wavFiles, patch) {
     zip.file(file.name, file.data);
   }
 
+  const manifest = {
+    format: "interPhace multisample",
+    version: 2,
+    rootMidi: patch.midiNote,
+    rootNote: midiToName(patch.midiNote),
+    lowMidi: zones[0].low,
+    highMidi: zones[zones.length - 1].high,
+    sampleStep: patch.sampleStep || 3,
+    zones,
+    sampleRate: patch.sampleRate,
+    bitDepth: 16,
+    renderedAt: new Date().toISOString(),
+    patch: patch,
+  };
+  zip.file("interPhace-manifest.json", JSON.stringify(manifest, null, 2));
+
+  const sfzRegions = zones.map((zone, index) =>
+    `<region> sample=${wavFiles[index].name} key=${zone.root} lokey=${zone.low} hikey=${zone.high} pitch_keycenter=${zone.root}`
+  ).join("\n");
+  zip.file("interPhace.sfz", `// interPhace multisample mapping\n<group> ampeg_release=0.05\n${sfzRegions}\n`);
+
+  const mapText = zones.map((zone, index) =>
+    `${wavFiles[index].name}: ${zone.lowNote} (${zone.low}) through ${zone.highNote} (${zone.high}), root ${zone.rootNote} (${zone.root})`
+  ).join("\n");
+  zip.file("KEY-ZONES.txt", mapText + "\n");
+  zip.file("README.txt", "interPhace multisample export\n\nWAV files are normalized 16-bit stereo PCM.\ninterPhace.sfz can be loaded by SFZ-compatible samplers.\nKEY-ZONES.txt lists the intended mapping for hardware samplers.\nThe JSON manifest contains the complete patch and zone data.\n");
+
   // Generate ZIP file
   const zipBlob = await zip.generateAsync({
     type: "blob",
@@ -366,36 +429,82 @@ async function createAndDownloadZip(wavFiles, patch) {
 RenderEngine.initPlaybackUI = function (patch) {
   const playBtn = document.getElementById("play");
   if (!playBtn) return;
-  const togglePlayback = () => {
+  let auditionGeneration = 0;
+
+  const setIdle = () => {
+    playBtn.disabled = false;
+    playBtn.textContent = "Audition";
+    playBtn.classList.remove("playing");
+  };
+
+  const togglePlayback = async () => {
+    if (window.activePlayback) {
+      auditionGeneration += 1;
+      RenderEngine.stop();
+      setIdle();
+      return;
+    }
+
+    const generation = ++auditionGeneration;
     try {
-      if (window.activePlayback) {
-        RenderEngine.stop();
-        playBtn.textContent = "Audition";
-        playBtn.classList.remove("playing");
-      } else {
-        window.activePlayback = RenderEngine.startFromPatch(patch);
-        playBtn.textContent = "Stop";
-        playBtn.classList.add("playing");
-      }
+      playBtn.disabled = true;
+      playBtn.textContent = "Rendering...";
+      updateParamsFromHTML();
+
+      const ctx = getPlaybackContext();
+      const result = await renderPatchToFloatBuffer(patch, ctx.sampleRate);
+      if (generation !== auditionGeneration) return;
+
+      const source = ctx.createBufferSource();
+      source.buffer = result.buffer;
+      const outGain = ctx.createGain();
+      outGain.gain.value = 1;
+      source.connect(outGain);
+      outGain.connect(ctx.destination);
+
+      const playback = {
+        ctx,
+        source,
+        outGain,
+        analysis: result.analysis,
+        stopped: false,
+      };
+      window.activePlayback = playback;
+
+      source.addEventListener("ended", () => {
+        if (window.activePlayback === playback) {
+          window.activePlayback = null;
+          setIdle();
+        }
+      });
+
+      console.log("🎧 Float audition analysis", {
+        peakBefore: result.analysis.peakBefore,
+        clippedSamplesBefore: result.analysis.clippedSamplesBefore,
+        appliedGain: result.analysis.appliedGain,
+        peakAfter: result.analysis.peakAfter,
+      });
+
+      source.start();
+      playBtn.disabled = false;
+      playBtn.textContent = "Stop";
+      playBtn.classList.add("playing");
     } catch (err) {
       console.error("Playback error:", err);
-      alert("Failed to start playback. Please try again.");
-      playBtn.textContent = "Audition";
-      playBtn.classList.remove("playing");
+      window.activePlayback = null;
+      setIdle();
+      alert("Failed to render audition. Please try again.");
     }
   };
+
   playBtn.addEventListener("click", togglePlayback);
-  const handleSpace = (e) => {
-    if (e.code !== "Space") return;
-    e.preventDefault();
-    e.stopPropagation();
-    e.stopImmediatePropagation();
-    // Only trigger on keydown so it doesn't fire twice
-    if (e.type === "keyup") {
-      togglePlayback();
-    }
+  const handleSpace = (event) => {
+    if (event.code !== "Space") return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    if (event.type === "keyup") togglePlayback();
   };
-  // Capture at the highest level, before anything else
   window.addEventListener("keydown", handleSpace, true);
   window.addEventListener("keyup", handleSpace, true);
 };
@@ -410,97 +519,13 @@ RenderEngine.startFromPatch = function (patch) {
   // Use persistent playback context (48kHz for performance)
   const ctx = getPlaybackContext();
 
-  const baseFreq = midiToFreq(patch.midiNote);
+  const plan = RenderPlan.create(patch, ctx.sampleRate);
+  const graph = GraphBuilder.build(ctx, patch, plan);
+  const finalNode = graph.node;
+  const noteLength = graph.noteLength;
+  const playbackTail = plan.effectsTail;
 
-  // --------------------------------------------------------
-  // 1) COMPUTE ENVELOPE LENGTH FIRST (no dummy nodes)
-  // --------------------------------------------------------
-
-  const noteLength = AmpEnvelopeEngine.computeLength(patch.envelope.ahdhd);
-
-  // --------------------------------------------------------
-  // 2) SYNTH ENGINE (MONO output)
-  // --------------------------------------------------------
-
-  let synthNode = null;
-  let carrierNode = null;
-
-  switch (patch.engine) {
-    case "fm":
-    default: {
-      const fmParams = patch.synth.fm;
-      const fmOut = FMEngine.build(ctx, baseFreq, fmParams, noteLength);
-      synthNode = fmOut.node; // MONO
-      carrierNode = fmOut.carrier; // For personality pitch modulation
-      break;
-    }
-  }
-
-  // --------------------------------------------------------
-  // 3) ENVELOPE ENGINE (mono input → mono output)
-  // --------------------------------------------------------
-
-  let envNode = null;
-
-  switch (patch.envEngine) {
-    case "ahdhd":
-    default: {
-      const envParams = patch.envelope.ahdhd;
-      const envOut = AmpEnvelopeEngine.apply(
-        ctx,
-        synthNode,
-        envParams,
-        carrierNode,
-        baseFreq,
-      );
-      envNode = envOut.node;
-      break;
-    }
-  }
-
-  // --------------------------------------------------------
-  // 4) FILTER ENGINE (mono input → mono output)
-  // --------------------------------------------------------
-
-  let filteredNode = envNode;
-
-  if (typeof FilterEngine !== "undefined" && patch.filter) {
-    const filterOut = FilterEngine.apply(ctx, envNode, patch.filter);
-    filteredNode = filterOut.node;
-  }
-
-  // --------------------------------------------------------
-  // 5) EFFECTS ENGINE (MONO input → STEREO output)
-  // --------------------------------------------------------
-  // The effects engine:
-  // - Converts mono to stereo via stereo width effect
-  // - Routes through all effects in stereo
-  // - Returns stereo output
-
-  const fxOut = EffectsEngine.applyAll(ctx, filteredNode, patch.fx, noteLength);
-  let finalNode = fxOut.node; // This is now STEREO (2 channels)
-
-  // --------------------------------------------------------
-  // 6) SAFETY LIMITER (stereo input → stereo output)
-  // --------------------------------------------------------
-
-  const limiter = ctx.createDynamicsCompressor();
-  limiter.threshold.value = -3;
-  limiter.knee.value = 0;
-  limiter.ratio.value = 20;
-  limiter.attack.value = 0.001;
-  limiter.release.value = 0.05;
-
-  finalNode.connect(limiter);
-
-  // --------------------------------------------------------
-  // 6) OUTPUT → DESTINATION (stereo)
-  // --------------------------------------------------------
-
-  const outGain = ctx.createGain();
-  outGain.gain.value = 0.9; // Boosted from 0.6 for louder output
-
-  limiter.connect(outGain).connect(ctx.destination);
+  finalNode.connect(ctx.destination);
 
   // --------------------------------------------------------
   // 7) NATURAL TIMEOUT CLEANUP
@@ -522,7 +547,7 @@ RenderEngine.startFromPatch = function (patch) {
         }
       }
     },
-    (noteLength + 0.1) * 1000,
+    (noteLength + playbackTail + 0.1) * 1000,
   );
 
   // --------------------------------------------------------
@@ -531,7 +556,7 @@ RenderEngine.startFromPatch = function (patch) {
 
   return {
     ctx,
-    outGain,
+    outGain: finalNode,
     noteLength,
     timeoutId: cleanupTimeout,
   };
@@ -544,21 +569,21 @@ RenderEngine.startFromPatch = function (patch) {
 RenderEngine.stop = function () {
   if (!window.activePlayback) return;
 
-  const { ctx, outGain, timeoutId } = window.activePlayback;
+  const playback = window.activePlayback;
+  const { ctx, outGain, source, timeoutId } = playback;
+  if (timeoutId) clearTimeout(timeoutId);
 
-  // Cancel the automatic cleanup
-  if (timeoutId) {
-    clearTimeout(timeoutId);
-  }
-
-  // Fade out smoothly
   const now = ctx.currentTime;
   outGain.gain.cancelScheduledValues(now);
   outGain.gain.setValueAtTime(outGain.gain.value, now);
-  outGain.gain.linearRampToValueAtTime(0, now + 0.3);
+  outGain.gain.linearRampToValueAtTime(0, now + 0.08);
+  playback.stopped = true;
 
-  // Clean up after fade
   setTimeout(() => {
-    window.activePlayback = null;
-  }, 350);
+    try {
+      if (source) source.stop();
+    } catch (_) {}
+    if (window.activePlayback === playback) window.activePlayback = null;
+  }, 100);
 };
+

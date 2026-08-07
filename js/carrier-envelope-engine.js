@@ -1,129 +1,15 @@
+(() => {
 // ============================================================
-//  AMP ENVELOPE ENGINE (SIMPLIFIED - NO PERSONALITIES)
+//  INTERPHACE PHASE 3 — CONTINUOUS AHDHD ENVELOPE / MODULATION
 // ============================================================
 
-window.AmpEnvelopeEngine = {};
+const AmpEnvelopeEngine = window.AmpEnvelopeEngine = {};
 
-// ------------------------------------------------------------
-//  ENVELOPE PERSONALITY PRESETS
-// ------------------------------------------------------------
+const { finite, clamp, lerp: interpolate, smoothstep } = window.AudioMath;
 
-const ENVELOPE_PERSONALITY_PRESETS = [
-  {
-    name: "Clean",
-    description: "No modulation - pure AHDHD",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: null, pitchMod: null },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: null, pitchMod: null },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Analog Drift",
-    description: "Gentle pitch/gain wobble on sustains",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: {wave: "sine", rate: 0.2, depth: 0.02}, pitchMod: {wave: "sine", rate: 0.15, depth: 0.01} },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: {wave: "sine", rate: 0.18, depth: 0.03}, pitchMod: {wave: "sine", rate: 0.12, depth: 0.015} },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Tape Wow",
-    description: "Slow pitch drift like old tape",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: null, pitchMod: {wave: "sine", rate: 0.08, depth: 0.02} },
-      decay1: { gainMod: null, pitchMod: {wave: "sine", rate: 0.08, depth: 0.02} },
-      hold2:  { gainMod: null, pitchMod: {wave: "sine", rate: 0.08, depth: 0.03} },
-      decay2: { gainMod: null, pitchMod: {wave: "sine", rate: 0.08, depth: 0.02} }
-    }
-  },
-  {
-    name: "Tremolo",
-    description: "Rhythmic gain pulsing on holds",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: {wave: "sine", rate: 4, depth: 0.15}, pitchMod: null },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: {wave: "sine", rate: 4, depth: 0.12}, pitchMod: null },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Vibrato",
-    description: "Pitch wobble during sustains",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: null, pitchMod: {wave: "sine", rate: 5, depth: 0.03} },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: null, pitchMod: {wave: "sine", rate: 5, depth: 0.025} },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Growl",
-    description: "Fast pitch shake during attack",
-    stages: {
-      attack: { gainMod: null, pitchMod: {wave: "sine", rate: 8, depth: 0.05} },
-      hold1:  { gainMod: null, pitchMod: null },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: null, pitchMod: null },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Bell Shimmer",
-    description: "Subtle sparkle during decay",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: null, pitchMod: null },
-      decay1: { gainMod: {wave: "sine", rate: 6, depth: 0.04}, pitchMod: {wave: "sine", rate: 7, depth: 0.02} },
-      hold2:  { gainMod: null, pitchMod: null },
-      decay2: { gainMod: {wave: "sine", rate: 5, depth: 0.03}, pitchMod: {wave: "sine", rate: 6, depth: 0.015} }
-    }
-  },
-  {
-    name: "Choir Breathe",
-    description: "Slow swell during holds like breathing",
-    stages: {
-      attack: { gainMod: null, pitchMod: null },
-      hold1:  { gainMod: {wave: "sine", rate: 0.25, depth: 0.08}, pitchMod: null },
-      decay1: { gainMod: null, pitchMod: null },
-      hold2:  { gainMod: {wave: "sine", rate: 0.2, depth: 0.1}, pitchMod: null },
-      decay2: { gainMod: null, pitchMod: null }
-    }
-  },
-  {
-    name: "Warble",
-    description: "Pitch and gain wobble everywhere",
-    stages: {
-      attack: { gainMod: null, pitchMod: {wave: "sine", rate: 3, depth: 0.02} },
-      hold1:  { gainMod: {wave: "sine", rate: 0.3, depth: 0.05}, pitchMod: {wave: "sine", rate: 2.5, depth: 0.025} },
-      decay1: { gainMod: null, pitchMod: {wave: "sine", rate: 2, depth: 0.02} },
-      hold2:  { gainMod: {wave: "sine", rate: 0.25, depth: 0.06}, pitchMod: {wave: "sine", rate: 2, depth: 0.03} },
-      decay2: { gainMod: null, pitchMod: {wave: "sine", rate: 1.5, depth: 0.015} }
-    }
-  },
-  {
-    name: "Unstable",
-    description: "Chaotic modulation - broken synth vibes",
-    stages: {
-      attack: { gainMod: {wave: "square", rate: 8, depth: 0.12}, pitchMod: {wave: "square", rate: 6, depth: 0.04} },
-      hold1:  { gainMod: {wave: "sine", rate: 0.5, depth: 0.15}, pitchMod: {wave: "square", rate: 4, depth: 0.05} },
-      decay1: { gainMod: {wave: "sine", rate: 3, depth: 0.1}, pitchMod: null },
-      hold2:  { gainMod: {wave: "sine", rate: 0.3, depth: 0.2}, pitchMod: {wave: "sine", rate: 2, depth: 0.06} },
-      decay2: { gainMod: null, pitchMod: {wave: "sine", rate: 1, depth: 0.03} }
-    }
-  },
-];
+const CHARACTER_PRESETS = window.InterPhaceData.CHARACTER_PRESETS;
 
-// ------------------------------------------------------------
-//  REGISTER DEFAULTS
-// ------------------------------------------------------------
+const INSTRUMENT_BEHAVIORS = window.InterPhaceData.INSTRUMENT_BEHAVIORS;
 
 AmpEnvelopeEngine.register = function (patch) {
   patch.envelope.ahdhd = {
@@ -133,185 +19,454 @@ AmpEnvelopeEngine.register = function (patch) {
     decay1Target: 0.1,
     hold2: 1.5,
     decay2: 0.9,
-    envMult: 1.0,
-    personality: 0, // Index into personality presets
+    envMult: 1,
+    instrumentBehavior: 0,
+    character: 0
   };
 };
 
-// ------------------------------------------------------------
-//  COMPUTE LENGTH (without creating nodes)
-// ------------------------------------------------------------
+function timelineFor(envParams) {
+  const mult = clamp(envParams.envMult, 0.05, 8);
+  const durations = {
+    attack: clamp(envParams.attack1, 0, 60) * mult,
+    hold1: clamp(envParams.hold1, 0, 60) * mult,
+    decay1: clamp(envParams.decay1, 0, 60) * mult,
+    hold2: clamp(envParams.hold2, 0, 60) * mult,
+    decay2: clamp(envParams.decay2, 0, 60) * mult,
+  };
+
+  const points = { start: 0 };
+  points.attackEnd = durations.attack;
+  points.hold1End = points.attackEnd + durations.hold1;
+  points.decay1End = points.hold1End + durations.decay1;
+  points.hold2End = points.decay1End + durations.hold2;
+  points.end = points.hold2End + durations.decay2;
+  return { durations, points, total: points.end };
+}
 
 AmpEnvelopeEngine.computeLength = function (envParams) {
-  const mult = envParams.envMult;
-  const tA = envParams.attack1 * mult;
-  const tH1 = envParams.hold1 * mult;
-  const tD1 = envParams.decay1 * mult;
-  const tH2 = envParams.hold2 * mult;
-  const tD2 = envParams.decay2 * mult;
-  return tA + tH1 + tD1 + tH2 + tD2;
+  return Math.max(0.02, timelineFor(envParams).total);
 };
 
-// ------------------------------------------------------------
-//  APPLY ENVELOPE WITH PERSONALITY
-// ------------------------------------------------------------
+function baseEnvelopeAt(time, timeline, sustain) {
+  const { durations: d, points: p } = timeline;
+  const floor = 0.00001;
 
-AmpEnvelopeEngine.apply = function (ctx, inputNode, envParams, carrierNode, baseFreq) {
-  const mult = envParams.envMult;
-
-  const tA = envParams.attack1 * mult;
-  const tH1 = envParams.hold1 * mult;
-  const tD1 = envParams.decay1 * mult;
-  const tH2 = envParams.hold2 * mult;
-  const tD2 = envParams.decay2 * mult;
-
-  const noteLength = tA + tH1 + tD1 + tH2 + tD2;
-
-  const t0 = ctx.currentTime;
-  const tA_end = t0 + tA;
-  const tH1_end = tA_end + tH1;
-  const tD1_end = tH1_end + tD1;
-  const tH2_end = tD1_end + tH2;
-  const tD2_end = tH2_end + tD2;
-
-  const env = ctx.createGain();
-  
-  // Cancel any previous schedules
-  env.gain.cancelScheduledValues(t0);
-  
-  // Use exponential ramps for more natural sound
-  env.gain.setValueAtTime(0.0001, t0);
-
-  // Attack: ramp up to 1.0
-  env.gain.exponentialRampToValueAtTime(1.0, tA_end);
-  
-  // Hold 1: stay at 1.0
-  env.gain.setValueAtTime(1.0, tH1_end);
-  
-  // Decay 1: ramp down to decay1Target
-  if (envParams.decay1Target > 0.0001) {
-    env.gain.exponentialRampToValueAtTime(envParams.decay1Target, tD1_end);
-  } else {
-    env.gain.linearRampToValueAtTime(0.0001, tD1_end);
+  if (time <= p.attackEnd) {
+    if (d.attack <= 0) return 1;
+    return interpolate(floor, 1, smoothstep(time / d.attack));
   }
-  
-  // Hold 2: stay at decay1Target
-  if (envParams.decay1Target > 0.0001) {
-    env.gain.setValueAtTime(envParams.decay1Target, tH2_end);
-  } else {
-    env.gain.setValueAtTime(0.0001, tH2_end);
+  if (time <= p.hold1End) return 1;
+  if (time <= p.decay1End) {
+    if (d.decay1 <= 0) return sustain;
+    return interpolate(1, sustain, smoothstep((time - p.hold1End) / d.decay1));
   }
-  
-  // Decay 2: ramp down to silence
-  env.gain.exponentialRampToValueAtTime(0.0001, tD2_end);
+  if (time <= p.hold2End) return sustain;
+  if (d.decay2 <= 0) return floor;
+  return interpolate(sustain, floor, smoothstep((time - p.hold2End) / d.decay2));
+}
 
-  inputNode.connect(env);
-
-  // ============================================================
-  //  PERSONALITY MODULATION
-  // ============================================================
-  
-  const personality = ENVELOPE_PERSONALITY_PRESETS[envParams.personality || 0];
-  let finalOutput = env;
-
-  if (personality && personality.name !== "Clean") {
-    // Create LFO oscillators
-    const gainLFO = ctx.createOscillator();
-    const pitchLFO = ctx.createOscillator();
-    
-    gainLFO.type = "sine";
-    pitchLFO.type = "sine";
-    
-    // Create depth control nodes
-    const gainLFODepth = ctx.createGain();
-    const pitchLFODepth = ctx.createGain();
-    
-    gainLFODepth.gain.value = 0;
-    pitchLFODepth.gain.value = 0;
-    
-    // Create personality gain modulation node
-    const personalityGain = ctx.createGain();
-    personalityGain.gain.value = 1.0; // Base level
-    
-    // Connect gain modulation
-    gainLFO.connect(gainLFODepth);
-    gainLFODepth.connect(personalityGain.gain);
-    
-    // Connect pitch modulation (if carrier provided)
-    if (carrierNode && baseFreq) {
-      pitchLFO.connect(pitchLFODepth);
-      pitchLFODepth.connect(carrierNode.frequency);
-    }
-    
-    // Route audio through personality gain
-    env.connect(personalityGain);
-    finalOutput = personalityGain;
-    
-    // Schedule modulation depths for each stage
-    scheduleStageModulation(ctx, gainLFO, gainLFODepth, personality.stages.attack, t0, tA, baseFreq);
-    scheduleStageModulation(ctx, gainLFO, gainLFODepth, personality.stages.hold1, tA_end, tH1, baseFreq);
-    scheduleStageModulation(ctx, gainLFO, gainLFODepth, personality.stages.decay1, tH1_end, tD1, baseFreq);
-    scheduleStageModulation(ctx, gainLFO, gainLFODepth, personality.stages.hold2, tD1_end, tH2, baseFreq);
-    scheduleStageModulation(ctx, gainLFO, gainLFODepth, personality.stages.decay2, tH2_end, tD2, baseFreq);
-    
-    if (carrierNode && baseFreq) {
-      scheduleStageModulation(ctx, pitchLFO, pitchLFODepth, personality.stages.attack, t0, tA, baseFreq, true);
-      scheduleStageModulation(ctx, pitchLFO, pitchLFODepth, personality.stages.hold1, tA_end, tH1, baseFreq, true);
-      scheduleStageModulation(ctx, pitchLFO, pitchLFODepth, personality.stages.decay1, tH1_end, tD1, baseFreq, true);
-      scheduleStageModulation(ctx, pitchLFO, pitchLFODepth, personality.stages.hold2, tD1_end, tH2, baseFreq, true);
-      scheduleStageModulation(ctx, pitchLFO, pitchLFODepth, personality.stages.decay2, tH2_end, tD2, baseFreq, true);
-    }
-    
-    // Start LFOs
-    gainLFO.start(t0);
-    pitchLFO.start(t0);
-    
-    // Stop LFOs
-    gainLFO.stop(tD2_end + 0.1);
-    pitchLFO.stop(tD2_end + 0.1);
+function sampleCurve(duration, evaluator, minimumSamples = 256) {
+  const count = Math.max(minimumSamples, Math.min(4096, Math.ceil(duration * 480)));
+  const curve = new Float32Array(count);
+  for (let index = 0; index < count; index++) {
+    const normalized = index / Math.max(1, count - 1);
+    curve[index] = finite(evaluator(normalized, normalized * duration));
   }
+  return curve;
+}
 
-  return {
-    node: finalOutput,
-    noteLength,
-  };
-};
-
-// ------------------------------------------------------------
-//  HELPER: SCHEDULE STAGE MODULATION
-// ------------------------------------------------------------
-
-function scheduleStageModulation(ctx, lfo, depthNode, stageDef, startTime, duration, baseFreq, isPitch = false) {
-  const RAMP_TIME = 0.01; // 10ms ramp to avoid clicks
-  
-  const modDef = isPitch ? stageDef.pitchMod : stageDef.gainMod;
-  
-  if (!modDef || duration < 0.001) {
-    // No modulation for this stage - ramp to zero
-    depthNode.gain.setValueAtTime(depthNode.gain.value, startTime);
-    depthNode.gain.linearRampToValueAtTime(0, startTime + RAMP_TIME);
+function scheduleCurve(param, startTime, duration, curve) {
+  param.cancelScheduledValues(startTime);
+  if (duration <= 0.0001) {
+    param.setValueAtTime(curve[curve.length - 1], startTime);
     return;
   }
-  
-  // Set LFO frequency
-  lfo.frequency.setValueAtTime(modDef.rate, startTime);
-  
-  // Calculate depth
-  let depth = modDef.depth;
-  
-  // For pitch modulation, convert semitone depth to Hz
-  if (isPitch && baseFreq) {
-    // depth is in semitones, convert to frequency deviation
-    const ratio = Math.pow(2, depth / 12);
-    depth = baseFreq * (ratio - 1);
+  param.setValueCurveAtTime(curve, startTime, duration);
+}
+
+function interpolatePoints(points, normalized) {
+  if (!points || !points.length) return 0;
+  const x = clamp(normalized, 0, 1);
+  if (x <= points[0][0]) return points[0][1];
+  for (let index = 1; index < points.length; index++) {
+    const left = points[index - 1];
+    const right = points[index];
+    if (x <= right[0]) {
+      const span = Math.max(0.000001, right[0] - left[0]);
+      return interpolate(left[1], right[1], smoothstep((x - left[0]) / span));
+    }
   }
-  
-  // Ramp to target depth
-  depthNode.gain.setValueAtTime(depthNode.gain.value, startTime);
-  depthNode.gain.linearRampToValueAtTime(depth, startTime + RAMP_TIME);
-  
-  // Update waveform if specified
-  if (modDef.wave) {
-    lfo.type = modDef.wave;
+  return points[points.length - 1][1];
+}
+
+
+
+// ============================================================
+// 20-EVENT PHASE-AWARE PERSONALITY ENGINE
+// ============================================================
+// Instrument Behaviors and Characters use the same event engine. A personality
+// owns a flat list of exactly twenty behavioral events. Every event independently
+// declares its AHDHD phase and its normalized position inside that phase.
+// No phase receives a reserved number of events: all twenty may legally live in
+// Attack, Hold 1, Decay 1, Hold 2, or Decay 2.
+const MICRO_POINT_COUNT = 20;
+const MICRO_PHASES = ["attack", "hold1", "decay1", "hold2", "decay2"];
+const MICRO_PHASE_INDEX = Object.freeze(
+  MICRO_PHASES.reduce((map, phase, index) => ({ ...map, [phase]: index }), {})
+);
+const INSTRUMENT_EVENT_DEFAULTS = window.PersonalityAuthoring.INSTRUMENT_DEFAULTS;
+const CHARACTER_EVENT_DEFAULTS = window.PersonalityAuthoring.CHARACTER_DEFAULTS;
+
+function requirePhaseName(phase) {
+  if (!Object.prototype.hasOwnProperty.call(MICRO_PHASE_INDEX, phase)) {
+    throw new Error(`Invalid personality phase: ${phase}`);
+  }
+  return phase;
+}
+
+function compileMicroProfile(profile, kind = profile?.kind) {
+  if (!profile || !Array.isArray(profile.events) || profile.events.length !== MICRO_POINT_COUNT) {
+    throw new Error(`Invalid personality profile: ${profile?.name || "Unnamed"}`);
+  }
+  const expectedKind = kind === "character" ? "character" : "instrument";
+  if (profile.kind && profile.kind !== expectedKind) {
+    throw new Error(`${profile.name} is not a ${expectedKind} profile`);
+  }
+  return {
+    version: 3,
+    pointCount: MICRO_POINT_COUNT,
+    phases: MICRO_PHASES.slice(),
+    events: profile.events,
+  };
+}
+
+function phaseStartAndDuration(timeline, phase) {
+  switch (requirePhaseName(phase)) {
+    case "attack": return { start: 0, duration: timeline.durations.attack };
+    case "hold1": return { start: timeline.points.attackEnd, duration: timeline.durations.hold1 };
+    case "decay1": return { start: timeline.points.hold1End, duration: timeline.durations.decay1 };
+    case "hold2": return { start: timeline.points.decay1End, duration: timeline.durations.hold2 };
+    case "decay2": return { start: timeline.points.hold2End, duration: timeline.durations.decay2 };
+    default: return { start: 0, duration: timeline.total };
   }
 }
+
+const resolvedEventCache = new WeakMap();
+
+function resolvedMicroEvents(profile, kind, timeline) {
+  if (!profile || !timeline) return [];
+  let timelineCache = resolvedEventCache.get(timeline);
+  if (!timelineCache) {
+    timelineCache = new WeakMap();
+    resolvedEventCache.set(timeline, timelineCache);
+  }
+  const cached = timelineCache.get(profile);
+  if (cached) return cached;
+  const micro = compileMicroProfile(profile, kind);
+  if (!micro?.events?.length) return [];
+  const resolved = micro.events.map((event, originalIndex) => {
+    const phase = phaseStartAndDuration(timeline, event.phase);
+    return {
+      ...event,
+      originalIndex,
+      absoluteTime: phase.start + phase.duration * clamp(event.phasePosition, 0, 1),
+    };
+  }).sort((left, right) => {
+    if (left.absoluteTime !== right.absoluteTime) return left.absoluteTime - right.absoluteTime;
+    const phaseDifference = MICRO_PHASE_INDEX[left.phase] - MICRO_PHASE_INDEX[right.phase];
+    return phaseDifference || left.phasePosition - right.phasePosition || left.originalIndex - right.originalIndex;
+  });
+  timelineCache.set(profile, resolved);
+  return resolved;
+}
+
+function microValue(profile, kind, key, timeline, time, fallback) {
+  const events = resolvedMicroEvents(profile, kind, timeline);
+  if (!events.length) return fallback;
+  const firstValue = finite(events[0][key], fallback);
+  if (time <= events[0].absoluteTime) return firstValue;
+
+  for (let index = 1; index < events.length; index++) {
+    const left = events[index - 1];
+    const right = events[index];
+    if (time <= right.absoluteTime) {
+      const leftValue = finite(left[key], fallback);
+      const rightValue = finite(right[key], fallback);
+      const span = right.absoluteTime - left.absoluteTime;
+      // Multiple events may intentionally occupy one instant (including a
+      // zero-length phase). The later event wins without creating NaN values.
+      if (span <= 0.000001) return rightValue;
+      return interpolate(leftValue, rightValue, smoothstep((time - left.absoluteTime) / span));
+    }
+  }
+  return finite(events[events.length - 1][key], fallback);
+}
+
+function microDescription(profile, kind) {
+  const micro = compileMicroProfile(profile, kind);
+  return {
+    ...micro,
+    events: micro.events.map(event => ({ ...event })),
+    pointPhases: micro.events.map(event => event.phase),
+    phasePositions: micro.events.map(event => event.phasePosition),
+  };
+}
+
+function modulationWindow(normalized) {
+  const fade = 0.06;
+  const fadeIn = smoothstep(normalized / fade);
+  const fadeOut = smoothstep((1 - normalized) / fade);
+  return Math.min(fadeIn, fadeOut);
+}
+
+function createContinuousLFO(ctx, targetParam, config, startTime, duration, scale = 1, options = {}) {
+  if (!targetParam || !config || duration <= 0) return null;
+
+  const timeline = options.timeline;
+  const profile = options.profile;
+  const kind = options.kind;
+  const rateKey = options.rateKey;
+  const depthKey = options.depthKey;
+  const baseDepth = finite(config.depth) * scale;
+
+  const depthCurve = sampleCurve(duration, (normalized, time) => {
+    const microDepth = timeline && profile && depthKey
+      ? microValue(profile, kind, depthKey, timeline, time, baseDepth)
+      : baseDepth;
+    return microDepth * modulationWindow(normalized);
+  });
+
+  // A neutral depth curve cannot affect the target. Avoid constructing and
+  // scheduling an oscillator, gain node, and random-rate curve for it.
+  const hasAudibleDepth = depthCurve.some(value => Math.abs(value) > 0.000001);
+  if (!hasAudibleDepth) return null;
+
+  const oscillator = ctx.createOscillator();
+  const depth = ctx.createGain();
+  oscillator.type = config.wave || "sine";
+
+  const baseRate = clamp(config.rate, 0.01, 30);
+  const randomAmount = clamp(config.randomRate, 0, 0.85);
+  const randomSegment = clamp(config.randomSegment || 1, 0.20, 4.0);
+  const randomPointCount = Math.max(3, Math.ceil(duration / randomSegment) + 2);
+  const randomPoints = [];
+  for (let i = 0; i < randomPointCount; i++) {
+    const normalized = i / (randomPointCount - 1);
+    const variation = randomAmount > 0 ? 1 + ((Math.random() * 2 - 1) * randomAmount) : 1;
+    randomPoints.push([normalized, variation]);
+  }
+
+  const rateCurve = sampleCurve(duration, (normalized, time) => {
+    const microRate = timeline && profile && rateKey
+      ? microValue(profile, kind, rateKey, timeline, time, baseRate)
+      : baseRate;
+    return clamp(microRate * interpolatePoints(randomPoints, normalized), 0.01, 30);
+  });
+
+  scheduleCurve(oscillator.frequency, startTime, duration, rateCurve);
+  scheduleCurve(depth.gain, startTime, duration, depthCurve);
+  oscillator.connect(depth);
+  depth.connect(targetParam);
+  oscillator.start(startTime);
+  oscillator.stop(startTime + duration + 0.01);
+  return oscillator;
+}
+
+function behaviorIndex(envParams) {
+  return clamp(envParams.instrumentBehavior, 0, INSTRUMENT_BEHAVIORS.length - 1);
+}
+
+function characterIndex(envParams) {
+  return clamp(envParams.character, 0, CHARACTER_PRESETS.length - 1);
+}
+
+function applyCompanionBehavior(companions, behavior, startTime, duration, timeline) {
+  if (!Array.isArray(companions) || !companions.length || !behavior || duration <= 0) return;
+  const profiles = behavior.companions || {};
+
+  companions.forEach((companion) => {
+    if (!companion?.gain) return;
+    const className = companion.classification === "lower"
+      ? "lower"
+      : companion.classification === "higher"
+        ? "higher"
+        : "equal";
+    const key = className === "lower"
+      ? "companionLower"
+      : className === "higher"
+        ? "companionHigher"
+        : "companionEqual";
+    const baseGain = Math.max(0, finite(companion.baseGain));
+    const curve = sampleCurve(duration, (_normalized, time) =>
+      Math.max(0, baseGain * microValue(behavior, "instrument", key, timeline, time, 1))
+    );
+    scheduleCurve(companion.gain, startTime, duration, curve);
+  });
+}
+
+AmpEnvelopeEngine.apply = function (ctx, inputNode, envParams, modulationTargets = {}) {
+  const timeline = timelineFor(envParams);
+  const noteLength = Math.max(0.02, timeline.total);
+  const startTime = ctx.currentTime;
+  const sustain = clamp(envParams.decay1Target, 0, 1);
+
+  const envelope = ctx.createGain();
+  const baseCurve = sampleCurve(noteLength, (_normalized, time) => baseEnvelopeAt(time, timeline, sustain));
+  scheduleCurve(envelope.gain, startTime, noteLength, baseCurve);
+  inputNode.connect(envelope);
+
+  const behavior = INSTRUMENT_BEHAVIORS[behaviorIndex(envParams)] || INSTRUMENT_BEHAVIORS[0];
+  const character = CHARACTER_PRESETS[characterIndex(envParams)] || CHARACTER_PRESETS[0];
+
+  let output = envelope;
+
+  // Volume micro-envelopes are always compiled. Neutral profiles resolve to 1.0.
+  const modifier = ctx.createGain();
+  const combinedCurve = sampleCurve(noteLength, (normalized) => {
+    const time = normalized * noteLength;
+    const behaviorGain = Math.max(0.02, microValue(behavior, "instrument", "volume", timeline, time, 1));
+    const characterGain = Math.max(0.02, microValue(character, "character", "volume", timeline, time, 1));
+    return behaviorGain * characterGain;
+  });
+  scheduleCurve(modifier.gain, startTime, noteLength, combinedCurve);
+  envelope.connect(modifier);
+  output = modifier;
+  createContinuousLFO(ctx, modifier.gain, { rate: 0.01, depth: 0 }, startTime, noteLength, 1, {
+    timeline, profile: behavior, kind: "instrument", rateKey: "motionRate", depthKey: "motionDepth"
+  });
+  createContinuousLFO(ctx, modifier.gain, { ...(character.gain || {}), wave: character.wave }, startTime, noteLength, 1, {
+    timeline, profile: character, kind: "character", rateKey: "gainRate", depthKey: "gainDepth"
+  });
+
+  // Instrument brightness and character tone are combined continuously.
+  // Neutral values leave the filter effectively open.
+  {
+    const brightnessFilter = ctx.createBiquadFilter();
+    brightnessFilter.type = "lowpass";
+    brightnessFilter.Q.setValueAtTime(0.55, startTime);
+    const nyquistSafe = Math.max(1000, ctx.sampleRate * 0.46);
+    const brightnessCurve = sampleCurve(noteLength, (_normalized, time) => {
+      let hz = microValue(behavior, "instrument", "brightness", timeline, time, nyquistSafe);
+      hz = Math.min(hz, microValue(character, "character", "brightnessHz", timeline, time, nyquistSafe));
+      hz *= microValue(character, "character", "brightness", timeline, time, 1);
+      return clamp(hz, 180, nyquistSafe);
+    });
+    scheduleCurve(brightnessFilter.frequency, startTime, noteLength, brightnessCurve);
+    createContinuousLFO(ctx, brightnessFilter.detune, character.brightnessMotion, startTime, noteLength, 1, {
+      timeline, profile: character, kind: "character", rateKey: "brightnessMotionRate", depthKey: "brightnessMotionDepth"
+    });
+    output.connect(brightnessFilter);
+    output = brightnessFilter;
+  }
+
+  // Tape-style saturation is parallel, level-compensated, and deliberately subtle.
+  // Full-series waveshaping adds strong harmonics to a sine and makes Tape,
+  // Cassette, and Worn converge toward the same bell-like tone.
+  if (character.drive && character.driveMix > 0) {
+    const mixAmount = clamp(character.driveMix, 0, 0.35);
+    const parallel = ctx.createGain();
+    const dry = ctx.createGain();
+    const wet = ctx.createGain();
+    const shaper = ctx.createWaveShaper();
+    const amount = clamp(character.drive, 1, 2);
+    const curve = new Float32Array(1024);
+    for (let i = 0; i < curve.length; i++) {
+      const x = (i / (curve.length - 1)) * 2 - 1;
+      curve[i] = Math.tanh(x * amount) / Math.tanh(amount);
+    }
+    shaper.curve = curve;
+    shaper.oversample = "2x";
+    dry.gain.setValueAtTime(1 - mixAmount, startTime);
+    wet.gain.setValueAtTime(mixAmount * 0.92, startTime);
+    output.connect(dry);
+    output.connect(shaper);
+    shaper.connect(wet);
+    dry.connect(parallel);
+    wet.connect(parallel);
+    output = parallel;
+  }
+
+  if (modulationTargets.detune) {
+    const pitchCurve = sampleCurve(noteLength, (_normalized, time) =>
+      microValue(behavior, "instrument", "pitch", timeline, time, 0)
+    );
+    scheduleCurve(modulationTargets.detune, startTime, noteLength, pitchCurve);
+  }
+  createContinuousLFO(ctx, modulationTargets.detune, { ...(character.pitch || {}), wave: character.wave }, startTime, noteLength, 1, {
+    timeline, profile: character, kind: "character", rateKey: "pitchRate", depthKey: "pitchDepth"
+  });
+
+  // Character texture is mixed quietly after the tonal path and fades at both ends.
+  if ((character.noise || character.crackle) && noteLength > 0) {
+    const mix = ctx.createGain();
+    const noiseGain = ctx.createGain();
+    const frameCount = Math.max(2, Math.ceil(ctx.sampleRate * noteLength));
+    const buffer = ctx.createBuffer(1, frameCount, ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    let held = 0;
+    for (let i = 0; i < frameCount; i++) {
+      const white = Math.random() * 2 - 1;
+      held = held * 0.86 + white * 0.14;
+      let sample = held * finite(character.noise);
+      if (character.crackle && Math.random() < 0.00065) {
+        sample += (Math.random() * 2 - 1) * finite(character.crackle);
+      }
+      data[i] = sample;
+    }
+    const source = ctx.createBufferSource();
+    source.buffer = buffer;
+    const noiseCurve = sampleCurve(noteLength, (normalized, time) => {
+      if (!character.noiseFollowsEnvelope) return modulationWindow(normalized);
+
+      // Breathy noise follows the audible tone instead of using its own generic
+      // fade. This prevents the air layer from arriving before the note or
+      // hanging behind it. The exponent keeps the breath tucked beneath quiet
+      // portions of the envelope, where exposed noise is most obvious.
+      const behaviorGain = Math.max(0.02, microValue(behavior, "instrument", "volume", timeline, time, 1));
+      const characterGain = Math.max(0.02, microValue(character, "character", "volume", timeline, time, 1));
+      const toneLevel = clamp(
+        baseEnvelopeAt(time, timeline, sustain) * behaviorGain * characterGain,
+        0,
+        1.5
+      );
+      const tracked = Math.pow(toneLevel, character.noiseEnvelopePower || 1);
+      return tracked * clamp(character.noiseMask || 1, 0, 1) * modulationWindow(normalized);
+    });
+    scheduleCurve(noiseGain.gain, startTime, noteLength, noiseCurve);
+    output.connect(mix);
+    source.connect(noiseGain);
+    noiseGain.connect(mix);
+    source.start(startTime);
+    source.stop(startTime + noteLength);
+    output = mix;
+  }
+
+  // Character and instrument behavior intentionally never touch FM amount.
+  applyCompanionBehavior(modulationTargets.companions, behavior, startTime, noteLength, timeline);
+
+  return { node: output, noteLength, timeline };
+};
+
+AmpEnvelopeEngine.getPersonalityNames = function () {
+  return CHARACTER_PRESETS.map(item => item.name);
+};
+
+AmpEnvelopeEngine.getCharacterNames = AmpEnvelopeEngine.getPersonalityNames;
+AmpEnvelopeEngine.getInstrumentBehaviorNames = function () {
+  return INSTRUMENT_BEHAVIORS.map(item => item.name);
+};
+
+// Read-only framework inspection hooks for future editors/debugging.
+AmpEnvelopeEngine.getInstrumentMicroProfile = function (index) {
+  const profile = INSTRUMENT_BEHAVIORS[clamp(index, 0, INSTRUMENT_BEHAVIORS.length - 1)];
+  return microDescription(profile, "instrument");
+};
+AmpEnvelopeEngine.getCharacterMicroProfile = function (index) {
+  const profile = CHARACTER_PRESETS[clamp(index, 0, CHARACTER_PRESETS.length - 1)];
+  return microDescription(profile, "character");
+};
+AmpEnvelopeEngine.MICRO_POINT_COUNT = MICRO_POINT_COUNT;
+AmpEnvelopeEngine.MICRO_PHASES = MICRO_PHASES.slice();
+
+})();
